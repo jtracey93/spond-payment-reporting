@@ -2,6 +2,8 @@
 
 $bearerToken = read-host -Prompt "Enter your Spond Bearer Token"
 
+$clubId = "$($clubId)"
+
 ## Get all members 
 $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 $session.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0"
@@ -28,7 +30,7 @@ $members = Invoke-WebRequest -UseBasicParsing -Uri "https://api.spond.com/club/v
   "sec-fetch-dest"         = "empty"
   "sec-fetch-mode"         = "cors"
   "sec-fetch-site"         = "same-site"
-  "x-spond-clubid"         = "0026812BFB76401091B6C47EF4DABAB9"
+  "x-spond-clubid"         = "$($clubId)"
   "x-spond-membershipauth" = "undefined"
 } `
   -ContentType "application/json"
@@ -60,7 +62,7 @@ $payments = Invoke-WebRequest -UseBasicParsing -Uri "https://api.spond.com/club/
   "sec-fetch-dest"         = "empty"
   "sec-fetch-mode"         = "cors"
   "sec-fetch-site"         = "same-site"
-  "x-spond-clubid"         = "0026812BFB76401091B6C47EF4DABAB9"
+  "x-spond-clubid"         = "$($clubId)"
   "x-spond-membershipauth" = "undefined"
 } `
   -ContentType "application/json"
@@ -92,7 +94,7 @@ $paymentDetails = Invoke-WebRequest -UseBasicParsing -Uri "https://api.spond.com
   "sec-fetch-dest"         = "empty"
   "sec-fetch-mode"         = "cors"
   "sec-fetch-site"         = "same-site"
-  "x-spond-clubid"         = "0026812BFB76401091B6C47EF4DABAB9"
+  "x-spond-clubid"         = "$($clubId)"
   "x-spond-membershipauth" = "undefined"
 } `
   -ContentType "application/json"
@@ -126,7 +128,7 @@ Invoke-WebRequest -UseBasicParsing -Uri "https://api.spond.com/club/v1/payments/
   "sec-fetch-dest"         = "empty"
   "sec-fetch-mode"         = "cors"
   "sec-fetch-site"         = "same-site"
-  "x-spond-clubid"         = "0026812BFB76401091B6C47EF4DABAB9"
+  "x-spond-clubid"         = "$($clubId)"
   "x-spond-membershipauth" = "undefined"
 } `
   -ContentType "application/json" `
