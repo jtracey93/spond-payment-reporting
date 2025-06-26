@@ -1,0 +1,11 @@
+# Manifest file for including additional files in the package
+include README.md
+include LICENSE
+include requirements.txt
+include requirements-dev.txt
+recursive-include src/spond_reporting *.py
+global-exclude *.pyc
+global-exclude __pycache__
+global-exclude .git*
+global-exclude .pytest_cache
+global-exclude *.egg-info
