@@ -1,5 +1,7 @@
 # Spond Payment Reporting Tool
 
+<a href="https://www.buymeacoffee.com/jacktracey" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 A Python tool for generating payment reports from the Spond club management system. This tool helps club administrators track outstanding payments and generate detailed Excel reports.
 
 ## Features
