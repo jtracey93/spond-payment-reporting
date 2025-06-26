@@ -6,6 +6,7 @@ import os
 import json
 from typing import Optional, Dict, Any
 from pathlib import Path
+from .auth import SpondAuthenticator, SpondAPIError
 
 
 class Config:
@@ -64,13 +65,19 @@ class Config:
             print(f"Warning: Could not load config file: {e}")
             return {'bearer_token': None, 'club_id': None}
     
-    def get_credentials_interactive(self) -> tuple:
+    def get_credentials_interactive(self, auto_mode: bool = False) -> tuple:
         """
         Get credentials interactively from user input
+        
+        Args:
+            auto_mode (bool): Whether to use automated credential gathering
         
         Returns:
             tuple: (bearer_token, club_id)
         """
+        if auto_mode:
+            return self.get_credentials_automated()
+        
         # Load existing config
         saved_creds = self.load_credentials()
         
@@ -103,3 +110,29 @@ class Config:
                 self.save_credentials(bearer_token, club_id, save_token in ('y', 'yes'))
         
         return bearer_token, club_id
+    
+    def get_credentials_automated(self) -> tuple:
+        """
+        Get credentials using automated authentication
+        
+        Returns:
+            tuple: (bearer_token, club_id)
+        """
+        authenticator = SpondAuthenticator()
+        try:
+            bearer_token, club_id = authenticator.get_credentials_automated()
+            
+            # Ask if user wants to save the credentials
+            print()
+            save_config = input("Save club ID for future use? (y/n) [y]: ").strip().lower()
+            if save_config in ('', 'y', 'yes'):
+                save_token = input("Save bearer token too? (NOT recommended for security) (y/n) [n]: ").strip().lower()
+                self.save_credentials(bearer_token, club_id, save_token in ('y', 'yes'))
+            
+            return bearer_token, club_id
+            
+        except SpondAPIError as e:
+            print(f"❌ Automated authentication failed: {e}")
+            print("📝 You can still use manual mode by extracting credentials from browser developer tools.")
+            print("   See README.md for detailed instructions.")
+            raise

@@ -73,9 +73,13 @@ excel_file = generator.generate_excel_report(granular_rows, "report.xlsx")
 
 ## Getting Your Credentials
 
-You'll need two pieces of information from Spond:
+You have two options for providing credentials to the tool:
 
-### 1. Bearer Token
+### Option 1: Manual Method (Recommended)
+
+Extract credentials manually from your browser - this is the most reliable method:
+
+#### 1. Bearer Token
 1. Log into Spond Club in your web browser
 2. Open Developer Tools (F12)
 3. Go to the Network tab
@@ -84,17 +88,38 @@ You'll need two pieces of information from Spond:
 6. In the request headers, find the `authorization` header
 7. Copy the value after "Bearer " (it's a long string)
 
-### 2. Club ID
+#### 2. Club ID
 1. In the same network requests, look for the `x-spond-clubid` header
 2. Copy this value (it's a GUID like `12345678-1234-1234-1234-123456789ABC`)
+
+### Option 2: Automated Method (Experimental)
+
+⚠️ **Warning: This feature is experimental and unofficial**
+
+The tool can attempt to automatically gather your credentials by logging in with your Spond username and password:
+
+```bash
+# Use automated credential gathering
+spond-report --auto-credentials
+```
+
+**Important Notes:**
+- This feature uses reverse-engineered API endpoints that may change without notice
+- Your password is not stored, but this method is less secure than manual extraction
+- If Spond changes their authentication system, this feature may stop working
+- Use at your own risk and ensure you comply with Spond's terms of service
+- The manual method above is more reliable and recommended
 
 ## Usage Examples
 
 ### Basic Usage
 
 ```bash
-# Run interactively
+# Run interactively (manual credential entry)
 spond-report
+
+# Run with automated credential gathering (experimental)
+spond-report --auto-credentials
 ```
 
 The tool will prompt you for your credentials and offer to save your Club ID for future use.
