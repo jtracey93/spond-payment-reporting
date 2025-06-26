@@ -12,7 +12,7 @@ A Python tool for generating payment reports from the Spond club management syst
 
 ## Installation
 
-### Option 1: Install from Source (Recommended for now)
+### Option 1: Install from Source
 
 ```bash
 # Clone the repository
@@ -23,13 +23,7 @@ cd spond-payment-reporting
 pip install -e .
 ```
 
-### Option 2: Install from PyPI (Coming Soon)
-
-```bash
-pip install spond-payment-reporting
-```
-
-### Option 3: Install Dependencies Only
+### Option 2: Install Dependencies Only
 
 If you prefer to run the script directly:
 
@@ -117,6 +111,37 @@ spond-report --bearer-token "$SPOND_BEARER_TOKEN" --club-id "$SPOND_CLUB_ID"
 # Verbose output for debugging
 spond-report --verbose
 ```
+
+### Title Filtering
+
+Filter payments by title to focus on specific types of payments. Supports single or multiple filters:
+
+```bash
+# Single filter examples
+spond-report --title-filter "2025"              # All 2025 payments
+spond-report --title-filter "Match Fee"         # All match fees
+spond-report --title-filter "Membership"        # Membership payments
+spond-report --title-filter "T20"               # T20 tournaments
+spond-report --title-filter "Donation"          # Donation payments
+
+# Multiple filters (AND logic) - payment must contain ALL terms
+spond-report --title-filter "Match Fee" --title-filter "2025"    # 2025 match fees only
+spond-report --title-filter "T20" --title-filter "2025"          # 2025 T20 matches only
+spond-report --title-filter "1st XI" --title-filter "2025"       # First team 2025 matches
+spond-report --title-filter "Away" --title-filter "2025"         # Away matches in 2025
+
+# Complete examples with output files
+spond-report --title-filter "Match Fee" --title-filter "2025" --output "2025_match_fees.xlsx"
+spond-report --title-filter "Membership" --output "membership_outstanding.xlsx"
+spond-report --title-filter "T20" --title-filter "2025" --output "t20_2025.xlsx"
+```
+
+**Filter Results Example:**
+- All payments: 141 outstanding items
+- `--title-filter "2025"`: 85 outstanding items  
+- `--title-filter "Match Fee"`: 100 outstanding items
+- `--title-filter "Match Fee" --title-filter "2025"`: 44 outstanding items
+- `--title-filter "T20" --title-filter "2025"`: 13 outstanding items
 
 ## Output
 
