@@ -5,7 +5,6 @@ Command-line interface for Spond Payment Reporting Tool
 
 import argparse
 import sys
-from pathlib import Path
 
 from .config import Config
 from .api import SpondAPI, SpondAPIError
@@ -20,9 +19,10 @@ def main():
         epilog="""
 Examples:
   spond-report                          # Interactive mode with prompts
+  spond-report --auto-credentials       # Automated credential gathering (experimental)
   spond-report -o my_report.xlsx        # Specify output file
   spond-report --title-filter "2025"    # Filter for payments containing "2025"
-  spond-report --title-filter "Match Fee" --title-filter "2025"  # Filter for payments containing BOTH "Match Fee" AND "2025"
+  spond-report --title-filter "Match Fee" --title-filter "2025"  # Filter for payments containing BOTH
   spond-report --title-filter "Match Fee" --output matches.xlsx  # Filter match fees only
   spond-report --bearer-token TOKEN --club-id ID  # Provide credentials directly
   spond-report --reset-config           # Reset saved configuration
@@ -47,6 +47,12 @@ For more information, visit: https://github.com/jtracey93/spond-payment-reportin
         '--club-id',
         type=str,
         help='Spond Club ID'
+    )
+    
+    parser.add_argument(
+        '--auto-credentials',
+        action='store_true',
+        help='Use automated credential gathering (experimental, requires Spond login)'
     )
     
     parser.add_argument(
@@ -100,7 +106,12 @@ For more information, visit: https://github.com/jtracey93/spond-payment-reportin
             print("Spond Payment Reporting Tool v1.0.0")
             print("=====================================")
             print()
-            bearer_token, club_id = config.get_credentials_interactive()
+            
+            if args.auto_credentials:
+                print("🤖 Using automated credential gathering mode")
+                print()
+            
+            bearer_token, club_id = config.get_credentials_interactive(auto_mode=args.auto_credentials)
         
         if not bearer_token or not club_id:
             print("Error: Bearer token and club ID are required")
