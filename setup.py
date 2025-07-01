@@ -48,6 +48,7 @@ setup(
     extras_require={
         "dev": [
             "pytest>=6.0",
+            "pytest-asyncio>=0.21.0",
             "black>=21.0",
             "flake8>=3.8",
         ],
@@ -55,6 +56,7 @@ setup(
     entry_points={
         "console_scripts": [
             "spond-report=spond_reporting.cli:main",
+            "spond-mcp-server=spond_reporting.mcp_server:main",
         ],
     },
     include_package_data=True,

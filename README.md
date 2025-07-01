@@ -11,6 +11,7 @@ A Python tool for generating payment reports from the Spond club management syst
 - 🖥️ Command-line interface for easy automation
 - 🔄 Proper error handling and retry logic
 - 📱 Modern Python package structure for easy installation
+- 🤖 **NEW**: MCP (Model Context Protocol) server for VS Code integration
 
 ## Installation
 
@@ -159,6 +160,55 @@ The tool can save your Club ID (and optionally your Bearer Token) in a configura
 - **Location**: `~/.spond-reporting/config.json`
 - **Permissions**: Automatically set to read-only for the user (600)
 - **Security**: Bearer tokens are not saved by default for security reasons
+
+## MCP Server for VS Code
+
+This package now includes an MCP (Model Context Protocol) server that allows you to query payment information directly from VS Code using AI assistants.
+
+### Setup for VS Code
+
+1. **Install the package** (if not already installed):
+   ```bash
+   pip install -e .
+   ```
+
+2. **Configure VS Code** by adding this to your `settings.json`:
+   ```json
+   {
+     "mcp.servers": {
+       "spond-payment-reporting": {
+         "command": "spond-mcp-server",
+         "args": [],
+         "transport": {
+           "type": "stdio"
+         }
+       }
+     }
+   }
+   ```
+
+3. **Set up credentials** by running the CLI tool once:
+   ```bash
+   spond-report
+   ```
+
+### Available MCP Tools
+
+Once configured, you can ask VS Code AI questions like:
+
+- "How much does John Smith owe in match fees?"
+- "Show me all outstanding 2025 payments"
+- "What are the payment statistics for our club?"
+- "Who owes money for T20 tournaments?"
+- "Find members with 'wilson' in their name"
+
+The MCP server provides these tools:
+- `get_member_payment_summary` - Get payment details for a specific member
+- `get_all_outstanding_payments` - List all outstanding payments with optional filtering
+- `get_payment_statistics` - Get aggregated payment statistics
+- `search_members` - Search for club members by name
+
+For detailed setup instructions, see [docs/vscode-mcp-setup.md](docs/vscode-mcp-setup.md).
 
 ## Development
 
