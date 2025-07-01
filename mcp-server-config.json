@@ -1,0 +1,92 @@
+{
+    "name": "spond-payment-reporting",
+    "description": "MCP server for Spond payment reporting and member queries",
+    "version": "1.0.0",
+    "command": "spond-mcp-server",
+    "args": [],
+    "env": {},
+    "transport": {
+        "type": "stdio"
+    },
+    "capabilities": {
+        "tools": true
+    },
+    "tools": [
+        {
+            "name": "get_member_payment_summary",
+            "description": "Get payment summary for a specific club member. Returns total amount owed, outstanding payments count, and breakdown by payment type.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "member_name": {
+                        "type": "string",
+                        "description": "Name of the member to look up (case-insensitive partial match)"
+                    }
+                },
+                "required": ["member_name"]
+            }
+        },
+        {
+            "name": "get_all_outstanding_payments",
+            "description": "Get all outstanding payments for the club, optionally filtered by payment title",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "title_filter": {
+                        "type": "string",
+                        "description": "Optional filter for payment titles (e.g., 'Match Fee', '2025')"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of results to return",
+                        "default": 50
+                    }
+                }
+            }
+        },
+        {
+            "name": "get_payment_statistics",
+            "description": "Get statistics about outstanding payments including total amounts, member counts, and payment type breakdowns",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "title_filter": {
+                        "type": "string",
+                        "description": "Optional filter for payment titles"
+                    }
+                }
+            }
+        },
+        {
+            "name": "search_members",
+            "description": "Search for club members by name to find the correct member name for other queries",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Search query for member names"
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+    ],
+    "examples": [
+        {
+            "description": "Get John's payment summary",
+            "query": "How much does John owe in match fees?",
+            "tools": ["search_members", "get_member_payment_summary"]
+        },
+        {
+            "description": "Get all 2025 match fees",
+            "query": "Show me all outstanding 2025 match fees",
+            "tools": ["get_all_outstanding_payments"]
+        },
+        {
+            "description": "Get payment statistics",
+            "query": "What are the overall payment statistics?",
+            "tools": ["get_payment_statistics"]
+        }
+    ]
+}
