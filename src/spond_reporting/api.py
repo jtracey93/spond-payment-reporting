@@ -3,13 +3,15 @@ Spond API client for fetching payment and member data.
 
 Uses the spond library (https://pypi.org/project/spond/) for authentication,
 with custom club API calls for endpoints not yet supported by the library.
+Includes support for SMS-based two-factor authentication (2FA).
 """
 
 import asyncio
 import requests
 import json
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
+from spond import AuthenticationError
 from spond.club import SpondClub
 
 
@@ -18,13 +20,91 @@ class SpondAPIError(Exception):
     pass
 
 
-def _authenticate(username: str, password: str) -> str:
+class _SpondClub2FA(SpondClub):
+    """Extended SpondClub that supports SMS-based two-factor authentication."""
+
+    def __init__(
+        self,
+        username: str,
+        password: str,
+        two_factor_callback: Optional[Callable[[str], str]] = None,
+    ) -> None:
+        super().__init__(username=username, password=password)
+        self._two_factor_callback = two_factor_callback
+
+    async def login(self) -> None:
+        login_url = f"{self.api_url}login"
+        data = {"email": self.username, "password": self.password}
+        async with self.clientsession.post(login_url, json=data) as r:
+            login_result = await r.json()
+            self.token = login_result.get("loginToken")
+
+            if self.token is not None:
+                return
+
+            # Check if 2FA is required
+            temp_token = login_result.get("token")
+            phone_number = login_result.get("phoneNumber")
+            if temp_token and phone_number:
+                await self._handle_2fa(temp_token, phone_number)
+                return
+
+            err_msg = f"Login failed. Response received: {login_result}"
+            raise AuthenticationError(err_msg)
+
+    async def _handle_2fa(self, temp_token: str, phone_number: str) -> None:
+        """Handle SMS-based two-factor authentication."""
+        if self._two_factor_callback is None:
+            raise SpondAPIError(
+                f"Two-factor authentication is required (SMS sent to "
+                f"{phone_number}) but no 2FA handler is available. "
+                f"Use --bearer-token as a fallback."
+            )
+
+        sms_code = self._two_factor_callback(phone_number)
+        if not sms_code:
+            raise SpondAPIError("SMS verification code cannot be empty")
+
+        login_url = f"{self.api_url}login"
+        data = {
+            "email": self.username,
+            "password": self.password,
+            "code": sms_code,
+            "token": temp_token,
+        }
+        async with self.clientsession.post(login_url, json=data) as r:
+            verify_result = await r.json()
+            self.token = verify_result.get("loginToken")
+            if self.token is None:
+                err_msg = (
+                    f"Two-factor verification failed. "
+                    f"Response received: {verify_result}"
+                )
+                raise AuthenticationError(err_msg)
+
+
+def _default_2fa_callback(phone_number: str) -> str:
+    """Default interactive callback that prompts the user for the SMS 2FA code."""
+    print(f"\nTwo-factor authentication required!")
+    print(f"An SMS verification code has been sent to: {phone_number}")
+    return input("Enter SMS verification code: ").strip()
+
+
+def _authenticate(
+    username: str,
+    password: str,
+    two_factor_callback: Optional[Callable[[str], str]] = None,
+) -> str:
     """
     Authenticate with Spond using the spond library and return a bearer token.
+    Supports SMS-based two-factor authentication (2FA).
 
     Args:
         username (str): Spond account email address
         password (str): Spond account password
+        two_factor_callback: Optional callback that receives a phone number
+            and returns the SMS verification code. If None, an interactive
+            prompt is used.
 
     Returns:
         str: Bearer token for API access
@@ -32,14 +112,25 @@ def _authenticate(username: str, password: str) -> str:
     Raises:
         SpondAPIError: If authentication fails
     """
+    if two_factor_callback is None:
+        two_factor_callback = _default_2fa_callback
+
     async def _login() -> str:
-        client = SpondClub(username=username, password=password)
+        client = _SpondClub2FA(
+            username=username,
+            password=password,
+            two_factor_callback=two_factor_callback,
+        )
         try:
             await client.login()
             token = client.token
             if not token:
                 raise SpondAPIError("Authentication succeeded but no token was returned")
             return token
+        except SpondAPIError:
+            raise
+        except AuthenticationError as e:
+            raise SpondAPIError(f"Authentication failed: {e}")
         except Exception as e:
             raise SpondAPIError(f"Authentication failed: {e}")
         finally:
@@ -78,15 +169,24 @@ class SpondAPI:
         }
     
     @classmethod
-    def from_credentials(cls, username: str, password: str, club_id: str) -> "SpondAPI":
+    def from_credentials(
+        cls,
+        username: str,
+        password: str,
+        club_id: str,
+        two_factor_callback: Optional[Callable[[str], str]] = None,
+    ) -> "SpondAPI":
         """
         Create a SpondAPI client by authenticating with email and password
-        using the spond library.
+        using the spond library. Supports SMS-based 2FA.
         
         Args:
             username (str): Spond account email address
             password (str): Spond account password
             club_id (str): Club ID for the Spond club
+            two_factor_callback: Optional callback that receives a phone number
+                and returns the SMS verification code. If None, an interactive
+                prompt is used when 2FA is required.
             
         Returns:
             SpondAPI: An authenticated API client instance
@@ -94,7 +194,7 @@ class SpondAPI:
         Raises:
             SpondAPIError: If authentication fails
         """
-        token = _authenticate(username, password)
+        token = _authenticate(username, password, two_factor_callback)
         return cls(bearer_token=token, club_id=club_id)
 
     def _make_request(self, url: str, method: str = "GET") -> Dict:

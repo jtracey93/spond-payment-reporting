@@ -7,6 +7,7 @@ A Python tool for generating payment reports from the Spond club management syst
 ## Features
 
 - 🔐 Email/password authentication via the [spond](https://pypi.org/project/spond/) library — no need to extract bearer tokens from browser developer tools
+- 📱 Two-factor authentication (2FA) support — users with SMS-based 2FA enabled are prompted for their verification code interactively
 - 📊 Excel reports with summary and detailed views
 - 🖥️ Command-line interface for easy automation
 - 🔄 Proper error handling and retry logic
@@ -63,7 +64,14 @@ spond-report --reset-config
 from spond_reporting import SpondAPI, PaymentReportGenerator
 
 # Authenticate with email/password (recommended)
+# If 2FA is enabled, you'll be prompted for the SMS code interactively
 api = SpondAPI.from_credentials("your@email.com", "your_password", "your_club_id")
+
+# Or provide a custom 2FA handler for non-interactive use
+# api = SpondAPI.from_credentials(
+#     "your@email.com", "your_password", "your_club_id",
+#     two_factor_callback=lambda phone: input(f"Enter SMS code sent to {phone}: ")
+# )
 
 # Or use a bearer token directly (legacy)
 # api = SpondAPI("your_bearer_token", "your_club_id")
@@ -86,8 +94,11 @@ The tool supports two authentication methods:
 
 Simply use your Spond account email and password. The tool uses the [spond](https://pypi.org/project/spond/) library to authenticate securely. Your password is never stored — only your email and club ID are saved for convenience.
 
+**Two-factor authentication (2FA)**: If your Spond account has 2-step verification enabled, you will be prompted to enter the SMS verification code sent to your phone during login. This works automatically — no extra configuration needed.
+
 ```bash
 # Interactive mode will prompt for email, password, and club ID
+# If 2FA is enabled, you'll also be prompted for the SMS code
 spond-report
 
 # Or provide email via CLI (password prompted securely)
@@ -242,8 +253,10 @@ spond-payment-reporting/
 ### Common Issues
 
 1. **"Authentication failed"**: Check your email and password are correct
-2. **"HTTP 401/403 errors"**: Check your club ID, or try re-authenticating
-3. **"No outstanding payments found"**: All payments may be up to date!
+2. **"Two-factor authentication is required"**: Your account has 2FA enabled. When using interactive mode, you'll be prompted for the SMS code. If using a non-interactive workflow, use `--bearer-token` instead.
+3. **"Two-factor verification failed"**: The SMS code you entered was incorrect or expired. Try logging in again to receive a new code.
+4. **"HTTP 401/403 errors"**: Check your club ID, or try re-authenticating
+5. **"No outstanding payments found"**: All payments may be up to date!
 
 ### Getting Help
 
