@@ -171,9 +171,9 @@ def fetch_clubs(bearer_token: str) -> List[Dict]:
         response.raise_for_status()
         return response.json()
     except requests.exceptions.HTTPError as e:
-        raise SpondAPIError(f"Failed to fetch clubs: {e}")
+        raise SpondAPIError(f"HTTP error while fetching clubs: {e}")
     except Exception as e:
-        raise SpondAPIError(f"Failed to fetch clubs: {e}")
+        raise SpondAPIError(f"Unexpected error while fetching clubs: {e}")
 
 
 class SpondAPI:

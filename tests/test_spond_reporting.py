@@ -6,6 +6,7 @@ import pytest
 import asyncio
 import tempfile
 import json
+import requests
 from pathlib import Path
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
 
@@ -313,11 +314,11 @@ class TestFetchClubs:
         """Test fetch clubs raises SpondAPIError on HTTP error"""
         mock_response = Mock()
         mock_response.raise_for_status = Mock(
-            side_effect=Exception("401 Unauthorized")
+            side_effect=requests.exceptions.HTTPError("401 Unauthorized")
         )
 
         with patch('spond_reporting.api.requests.get', return_value=mock_response):
-            with pytest.raises(SpondAPIError, match="Failed to fetch clubs"):
+            with pytest.raises(SpondAPIError, match="HTTP error while fetching clubs"):
                 fetch_clubs("bad_token")
 
 
