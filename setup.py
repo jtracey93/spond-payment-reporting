@@ -41,6 +41,7 @@ setup(
     ],
     python_requires=">=3.8",
     install_requires=[
+        "spond>=1.1.0",
         "requests>=2.25.0",
         "pandas>=1.3.0",
         "openpyxl>=3.0.0",

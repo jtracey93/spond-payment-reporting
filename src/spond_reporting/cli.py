@@ -24,7 +24,8 @@ Examples:
   spond-report --title-filter "2025"    # Filter for payments containing "2025"
   spond-report --title-filter "Match Fee" --title-filter "2025"  # Filter for payments containing BOTH "Match Fee" AND "2025"
   spond-report --title-filter "Match Fee" --output matches.xlsx  # Filter match fees only
-  spond-report --bearer-token TOKEN --club-id ID  # Provide credentials directly
+  spond-report --email user@example.com --club-id ID  # Provide email directly (will prompt for password)
+  spond-report --bearer-token TOKEN --club-id ID  # Legacy: provide bearer token directly
   spond-report --reset-config           # Reset saved configuration
 
 For more information, visit: https://github.com/jtracey93/spond-payment-reporting
@@ -38,9 +39,15 @@ For more information, visit: https://github.com/jtracey93/spond-payment-reportin
     )
     
     parser.add_argument(
+        '--email',
+        type=str,
+        help='Spond account email address for authentication'
+    )
+    
+    parser.add_argument(
         '--bearer-token',
         type=str,
-        help='Spond Bearer Token for authentication'
+        help='(Legacy) Spond Bearer Token for authentication'
     )
     
     parser.add_argument(
@@ -90,27 +97,45 @@ For more information, visit: https://github.com/jtracey93/spond-payment-reportin
         # Initialize components
         config = Config()
         
-        # Get credentials
+        # Get credentials and create API client
         if args.bearer_token and args.club_id:
-            bearer_token = args.bearer_token
-            club_id = args.club_id
+            # Legacy: bearer token provided directly
             if args.verbose:
-                print("Using credentials from command line arguments")
+                print("Using bearer token from command line arguments")
+            api = SpondAPI(args.bearer_token, args.club_id)
+        elif args.email and args.club_id:
+            # Email provided via CLI - prompt for password
+            import getpass
+            password = getpass.getpass('Enter your Spond password: ')
+            if args.verbose:
+                print(f"Authenticating with Spond as {args.email}...")
+            print("Logging in to Spond...")
+            api = SpondAPI.from_credentials(args.email, password, args.club_id)
+            print("Login successful!")
         else:
             print("Spond Payment Reporting Tool v1.0.0")
             print("=====================================")
             print()
-            bearer_token, club_id = config.get_credentials_interactive()
-        
-        if not bearer_token or not club_id:
-            print("Error: Bearer token and club ID are required")
-            return 1
-        
-        # Initialize API client
-        if args.verbose:
-            print(f"Connecting to Spond API for club: {club_id}")
-        
-        api = SpondAPI(bearer_token, club_id)
+            email, password_or_token, club_id = config.get_credentials_interactive()
+            
+            if not club_id:
+                print("Error: Club ID is required")
+                return 1
+            
+            if email:
+                # Email/password authentication via spond library
+                if not password_or_token:
+                    print("Error: Password is required")
+                    return 1
+                print("Logging in to Spond...")
+                api = SpondAPI.from_credentials(email, password_or_token, club_id)
+                print("Login successful!")
+            else:
+                # Legacy bearer token authentication
+                if not password_or_token:
+                    print("Error: Bearer token is required")
+                    return 1
+                api = SpondAPI(password_or_token, club_id)
         
         # Fetch data
         print("Fetching members...")

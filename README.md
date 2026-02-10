@@ -6,7 +6,7 @@ A Python tool for generating payment reports from the Spond club management syst
 
 ## Features
 
-- 🔐 Secure credential management with optional local storage
+- 🔐 Email/password authentication via the [spond](https://pypi.org/project/spond/) library — no need to extract bearer tokens from browser developer tools
 - 📊 Excel reports with summary and detailed views
 - 🖥️ Command-line interface for easy automation
 - 🔄 Proper error handling and retry logic
@@ -41,12 +41,16 @@ After installation, you can use the `spond-report` command:
 
 ```bash
 # Interactive mode (recommended for first-time users)
+# Will prompt for your Spond email, password, and club ID
 spond-report
 
 # Specify output file
 spond-report -o my_report.xlsx
 
-# Provide credentials directly (useful for automation)
+# Provide email directly (will prompt for password securely)
+spond-report --email user@example.com --club-id YOUR_CLUB_ID
+
+# Legacy: provide bearer token directly (useful for automation)
 spond-report --bearer-token YOUR_TOKEN --club-id YOUR_CLUB_ID
 
 # Reset saved configuration
@@ -58,8 +62,11 @@ spond-report --reset-config
 ```python
 from spond_reporting import SpondAPI, PaymentReportGenerator
 
-# Initialize API client
-api = SpondAPI("your_bearer_token", "your_club_id")
+# Authenticate with email/password (recommended)
+api = SpondAPI.from_credentials("your@email.com", "your_password", "your_club_id")
+
+# Or use a bearer token directly (legacy)
+# api = SpondAPI("your_bearer_token", "your_club_id")
 
 # Fetch data
 members, member_map = api.get_members()
@@ -71,11 +78,26 @@ granular_rows, stats = generator.process_payment_data(payments, member_map, api)
 excel_file = generator.generate_excel_report(granular_rows, "report.xlsx")
 ```
 
-## Getting Your Credentials
+## Authentication
 
-You'll need two pieces of information from Spond:
+The tool supports two authentication methods:
 
-### 1. Bearer Token
+### 1. Email/Password Login (Recommended)
+
+Simply use your Spond account email and password. The tool uses the [spond](https://pypi.org/project/spond/) library to authenticate securely. Your password is never stored — only your email and club ID are saved for convenience.
+
+```bash
+# Interactive mode will prompt for email, password, and club ID
+spond-report
+
+# Or provide email via CLI (password prompted securely)
+spond-report --email user@example.com --club-id YOUR_CLUB_ID
+```
+
+### 2. Bearer Token (Legacy)
+
+If you prefer, you can still use a bearer token extracted from browser developer tools:
+
 1. Log into Spond Club in your web browser
 2. Open Developer Tools (F12)
 3. Go to the Network tab
@@ -84,8 +106,9 @@ You'll need two pieces of information from Spond:
 6. In the request headers, find the `authorization` header
 7. Copy the value after "Bearer " (it's a long string)
 
-### 2. Club ID
-1. In the same network requests, look for the `x-spond-clubid` header
+### Getting Your Club ID
+
+1. In the browser Network tab, look for the `x-spond-clubid` header in API requests
 2. Copy this value (it's a GUID like `12345678-1234-1234-1234-123456789ABC`)
 
 ## Usage Examples
@@ -105,10 +128,13 @@ The tool will prompt you for your credentials and offer to save your Club ID for
 # Generate report with custom filename
 spond-report -o "monthly_report_$(date +%Y%m%d).xlsx"
 
-# Use in a script with environment variables
+# Use in a script with environment variables (legacy bearer token)
 export SPOND_BEARER_TOKEN="your_token_here"
 export SPOND_CLUB_ID="your_club_id_here"
 spond-report --bearer-token "$SPOND_BEARER_TOKEN" --club-id "$SPOND_CLUB_ID"
+
+# Provide email via CLI (password will be prompted securely)
+spond-report --email user@example.com --club-id "$SPOND_CLUB_ID"
 
 # Verbose output for debugging
 spond-report --verbose
@@ -154,11 +180,11 @@ The tool generates an Excel file with two sheets:
 
 ## Configuration
 
-The tool can save your Club ID (and optionally your Bearer Token) in a configuration file:
+The tool can save your email and Club ID in a configuration file for convenience:
 
 - **Location**: `~/.spond-reporting/config.json`
 - **Permissions**: Automatically set to read-only for the user (600)
-- **Security**: Bearer tokens are not saved by default for security reasons
+- **Security**: Passwords are never saved; only email and Club ID are stored
 
 ## Development
 
@@ -206,17 +232,17 @@ spond-payment-reporting/
 
 ## Security Considerations
 
-- 🔒 Bearer tokens are sensitive credentials - never commit them to version control
+- 🔒 Passwords are prompted securely and never saved to disk
 - 🏠 Config files are stored in your home directory with restricted permissions
-- ⚠️ Be cautious when saving bearer tokens to config files
-- 🔄 Bearer tokens may expire and need to be refreshed periodically
+- ⚠️ Legacy bearer token mode is still available but email/password login is recommended
+- 🔄 The [spond](https://pypi.org/project/spond/) library handles authentication, so you no longer need to manually extract tokens from browser developer tools
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **"JSON Decode Error"**: Usually indicates an expired bearer token
-2. **"HTTP 401/403 errors"**: Check your bearer token and club ID
+1. **"Authentication failed"**: Check your email and password are correct
+2. **"HTTP 401/403 errors"**: Check your club ID, or try re-authenticating
 3. **"No outstanding payments found"**: All payments may be up to date!
 
 ### Getting Help

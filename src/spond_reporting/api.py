@@ -1,15 +1,56 @@
 """
-Spond API client for fetching payment and member data
+Spond API client for fetching payment and member data.
+
+Uses the spond library (https://pypi.org/project/spond/) for authentication,
+with custom club API calls for endpoints not yet supported by the library.
 """
 
+import asyncio
 import requests
 import json
 from typing import Dict, List, Optional, Tuple
+
+from spond.club import SpondClub
 
 
 class SpondAPIError(Exception):
     """Custom exception for Spond API errors"""
     pass
+
+
+def _authenticate(username: str, password: str) -> str:
+    """
+    Authenticate with Spond using the spond library and return a bearer token.
+
+    Args:
+        username (str): Spond account email address
+        password (str): Spond account password
+
+    Returns:
+        str: Bearer token for API access
+
+    Raises:
+        SpondAPIError: If authentication fails
+    """
+    async def _login() -> str:
+        client = SpondClub(username=username, password=password)
+        try:
+            await client.login()
+            token = client.token
+            if not token:
+                raise SpondAPIError("Authentication succeeded but no token was returned")
+            return token
+        except Exception as e:
+            raise SpondAPIError(f"Authentication failed: {e}")
+        finally:
+            await client.clientsession.close()
+
+    try:
+        return asyncio.run(_login())
+    except SpondAPIError:
+        raise
+    except Exception as e:
+        raise SpondAPIError(f"Authentication failed: {e}")
 
 
 class SpondAPI:
@@ -30,28 +71,32 @@ class SpondAPI:
         
         # Set up default headers
         self.headers = {
-            "authority": "api.spond.com",
             "accept": "application/json",
-            "accept-language": "en-GB,en;q=0.9,en-US;q=0.8",
-            "api-level": "4.72.0",
             "authorization": f"Bearer {bearer_token}",
-            "cache-control": "no-cache",
-            "origin": "https://club.spond.com",
-            "pragma": "no-cache",
-            "priority": "u=1, i",
-            "referer": "https://club.spond.com/",
-            "sec-ch-ua": '"Not;A=Brand";v="99", "Microsoft Edge";v="139", "Chromium";v="139"',
-            "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-platform": '"Windows"',
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-site",
-            "x-spond-clubid": club_id,
-            "x-spond-membershipauth": "undefined",
             "content-type": "application/json",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0"
+            "x-spond-clubid": club_id,
         }
     
+    @classmethod
+    def from_credentials(cls, username: str, password: str, club_id: str) -> "SpondAPI":
+        """
+        Create a SpondAPI client by authenticating with email and password
+        using the spond library.
+        
+        Args:
+            username (str): Spond account email address
+            password (str): Spond account password
+            club_id (str): Club ID for the Spond club
+            
+        Returns:
+            SpondAPI: An authenticated API client instance
+            
+        Raises:
+            SpondAPIError: If authentication fails
+        """
+        token = _authenticate(username, password)
+        return cls(bearer_token=token, club_id=club_id)
+
     def _make_request(self, url: str, method: str = "GET") -> Dict:
         """
         Make an API request with error handling
@@ -85,6 +130,8 @@ class SpondAPI:
             raise SpondAPIError(f"HTTP Error: {e}. Response: {response.text}")
         except json.JSONDecodeError as e:
             raise SpondAPIError(f"JSON Decode Error: {e}. Response: {response.text}")
+        except SpondAPIError:
+            raise
         except Exception as e:
             raise SpondAPIError(f"Unexpected error: {e}")
     
