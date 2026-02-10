@@ -144,6 +144,38 @@ def _authenticate(
         raise SpondAPIError(f"Authentication failed: {e}")
 
 
+def fetch_clubs(bearer_token: str) -> List[Dict]:
+    """
+    Fetch available clubs for the authenticated user.
+
+    This calls the Spond club API without a club ID header to retrieve
+    the list of clubs the user has access to.
+
+    Args:
+        bearer_token (str): Bearer token from authentication
+
+    Returns:
+        List[Dict]: List of club objects with 'id' and 'name' keys
+
+    Raises:
+        SpondAPIError: If the request fails
+    """
+    url = "https://api.spond.com/club/v1/clubs"
+    headers = {
+        "accept": "application/json",
+        "authorization": f"Bearer {bearer_token}",
+        "content-type": "application/json",
+    }
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.HTTPError as e:
+        raise SpondAPIError(f"Failed to fetch clubs: {e}")
+    except Exception as e:
+        raise SpondAPIError(f"Failed to fetch clubs: {e}")
+
+
 class SpondAPI:
     """Client for interacting with Spond API"""
     

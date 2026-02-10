@@ -10,7 +10,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
 
 from spond_reporting.config import Config
-from spond_reporting.api import SpondAPI, SpondAPIError, _authenticate, _SpondClub2FA
+from spond_reporting.api import SpondAPI, SpondAPIError, _authenticate, _SpondClub2FA, fetch_clubs
 from spond_reporting.report import PaymentReportGenerator
 from spond import AuthenticationError
 
@@ -288,6 +288,74 @@ class TestPaymentReportGenerator:
         
         result = generator.generate_excel_report([])
         assert result is None
+
+
+class TestFetchClubs:
+    """Tests for fetching available clubs"""
+
+    def test_fetch_clubs_success(self):
+        """Test successful fetching of clubs"""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.raise_for_status = Mock()
+        mock_response.json = Mock(return_value=[
+            {"id": "club1", "name": "Test Club 1"},
+            {"id": "club2", "name": "Test Club 2"},
+        ])
+
+        with patch('spond_reporting.api.requests.get', return_value=mock_response):
+            clubs = fetch_clubs("test_token")
+            assert len(clubs) == 2
+            assert clubs[0]['id'] == "club1"
+            assert clubs[1]['name'] == "Test Club 2"
+
+    def test_fetch_clubs_http_error(self):
+        """Test fetch clubs raises SpondAPIError on HTTP error"""
+        mock_response = Mock()
+        mock_response.raise_for_status = Mock(
+            side_effect=Exception("401 Unauthorized")
+        )
+
+        with patch('spond_reporting.api.requests.get', return_value=mock_response):
+            with pytest.raises(SpondAPIError, match="Failed to fetch clubs"):
+                fetch_clubs("bad_token")
+
+
+class TestSelectClubInteractive:
+    """Tests for interactive club selection"""
+
+    def test_select_single_club(self):
+        """Test selecting from a single club"""
+        clubs = [{"id": "club1", "name": "My Club"}]
+        with patch('builtins.input', return_value="1"):
+            result = Config.select_club_interactive(clubs)
+            assert result == "club1"
+
+    def test_select_second_club(self):
+        """Test selecting the second club from a list"""
+        clubs = [
+            {"id": "club1", "name": "Club A"},
+            {"id": "club2", "name": "Club B"},
+            {"id": "club3", "name": "Club C"},
+        ]
+        with patch('builtins.input', return_value="2"):
+            result = Config.select_club_interactive(clubs)
+            assert result == "club2"
+
+    def test_empty_clubs_raises(self):
+        """Test that empty club list raises ValueError"""
+        with pytest.raises(ValueError, match="No clubs found"):
+            Config.select_club_interactive([])
+
+    def test_invalid_then_valid_selection(self):
+        """Test recovery from invalid input"""
+        clubs = [
+            {"id": "club1", "name": "Club A"},
+            {"id": "club2", "name": "Club B"},
+        ]
+        with patch('builtins.input', side_effect=["abc", "0", "3", "1"]):
+            result = Config.select_club_interactive(clubs)
+            assert result == "club1"
 
 
 if __name__ == '__main__':

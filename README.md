@@ -8,6 +8,7 @@ A Python tool for generating payment reports from the Spond club management syst
 
 - 🔐 Email/password authentication via the [spond](https://pypi.org/project/spond/) library — no need to extract bearer tokens from browser developer tools
 - 📱 Two-factor authentication (2FA) support — users with SMS-based 2FA enabled are prompted for their verification code interactively
+- 🏢 Interactive club selection — if no club ID is provided, available clubs are fetched and displayed for selection
 - 📊 Excel reports with summary and detailed views
 - 🖥️ Command-line interface for easy automation
 - 🔄 Proper error handling and retry logic
@@ -42,13 +43,16 @@ After installation, you can use the `spond-report` command:
 
 ```bash
 # Interactive mode (recommended for first-time users)
-# Will prompt for your Spond email, password, and club ID
+# Will prompt for your Spond email, password, and club selection
 spond-report
 
 # Specify output file
 spond-report -o my_report.xlsx
 
-# Provide email directly (will prompt for password securely)
+# Provide email directly (will prompt for password and club selection)
+spond-report --email user@example.com
+
+# Provide email and club ID directly (will prompt for password securely)
 spond-report --email user@example.com --club-id YOUR_CLUB_ID
 
 # Legacy: provide bearer token directly (useful for automation)
@@ -119,6 +123,18 @@ If you prefer, you can still use a bearer token extracted from browser developer
 
 ### Getting Your Club ID
 
+The easiest way is to let the tool find your clubs automatically. When you run the tool without a `--club-id`, it will fetch your available clubs and display them in a numbered list for you to choose from:
+
+```
+Available clubs:
+  1. My Cricket Club (abc12345-...)
+  2. Another Club (def67890-...)
+
+Select a club (1-2): 1
+Selected: My Cricket Club
+```
+
+Alternatively, you can find it manually:
 1. In the browser Network tab, look for the `x-spond-clubid` header in API requests
 2. Copy this value (it's a GUID like `12345678-1234-1234-1234-123456789ABC`)
 

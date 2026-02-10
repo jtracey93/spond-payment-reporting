@@ -82,6 +82,8 @@ class Config:
         Returns:
             tuple: (email, password, club_id) for spond auth, or
                    (None, bearer_token, club_id) for legacy auth
+            Note: club_id may be None if not saved and not entered manually.
+            The caller should handle interactive club selection in that case.
         """
         # Load existing config
         saved_creds = self.load_credentials()
@@ -108,18 +110,18 @@ class Config:
         
         password = getpass.getpass('Enter your Spond password: ')
         
-        # Get club ID
+        # Get club ID (may return None if user skips and wants interactive selection)
         club_id = self._get_club_id_interactive(saved_creds)
         
         # Ask if user wants to save email and club ID
-        if not saved_creds.get('club_id') or club_id != saved_creds.get('club_id') or email != saved_creds.get('email'):
+        if club_id and (not saved_creds.get('club_id') or club_id != saved_creds.get('club_id') or email != saved_creds.get('email')):
             save_config = input("Save email and club ID for future use? (y/n) [y]: ").strip().lower()
             if save_config in ('', 'y', 'yes'):
                 self.save_credentials(club_id=club_id, email=email)
         
         return email, password, club_id
     
-    def _get_club_id_interactive(self, saved_creds: Dict) -> str:
+    def _get_club_id_interactive(self, saved_creds: Dict) -> Optional[str]:
         """
         Get club ID interactively
         
@@ -127,7 +129,7 @@ class Config:
             saved_creds (Dict): Previously saved credentials
             
         Returns:
-            str: Club ID
+            Optional[str]: Club ID, or None if not provided
         """
         if saved_creds.get('club_id'):
             club_id_prompt = f"Enter your Spond Club ID [{saved_creds['club_id']}]: "
@@ -136,6 +138,42 @@ class Config:
                 club_id = saved_creds['club_id']
                 print(f"Using saved club ID: {club_id}")
         else:
-            club_id = input('Enter your Spond Club ID: ').strip()
+            club_id = input('Enter your Spond Club ID (leave blank to select from available clubs): ').strip()
         
-        return club_id
+        return club_id or None
+
+    @staticmethod
+    def select_club_interactive(clubs: list) -> str:
+        """
+        Display available clubs and let the user select one.
+
+        Args:
+            clubs (list): List of club dicts with 'id' and 'name' keys
+
+        Returns:
+            str: Selected club ID
+
+        Raises:
+            ValueError: If no clubs are available or selection is invalid
+        """
+        if not clubs:
+            raise ValueError("No clubs found for this account")
+
+        print("\nAvailable clubs:")
+        for i, club in enumerate(clubs, 1):
+            name = club.get('name', 'Unknown')
+            club_id = club.get('id', '')
+            print(f"  {i}. {name} ({club_id})")
+
+        while True:
+            selection = input(f"\nSelect a club (1-{len(clubs)}): ").strip()
+            try:
+                index = int(selection)
+                if 1 <= index <= len(clubs):
+                    selected = clubs[index - 1]
+                    print(f"Selected: {selected.get('name', 'Unknown')}")
+                    return selected['id']
+                else:
+                    print(f"Please enter a number between 1 and {len(clubs)}")
+            except ValueError:
+                print(f"Please enter a valid number between 1 and {len(clubs)}")
