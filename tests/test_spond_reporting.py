@@ -12,6 +12,7 @@ from unittest.mock import Mock, patch, AsyncMock, MagicMock
 from spond_reporting.config import Config
 from spond_reporting.api import SpondAPI, SpondAPIError, _authenticate, _SpondClub2FA
 from spond_reporting.report import PaymentReportGenerator
+from spond import AuthenticationError
 
 
 class TestConfig:
@@ -262,7 +263,6 @@ class TestSpondClub2FA:
             side_effect=[first_response, second_response]
         )
         
-        from spond import AuthenticationError
         with pytest.raises(AuthenticationError, match="Two-factor verification failed"):
             asyncio.run(client.login())
 
