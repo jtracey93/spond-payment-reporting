@@ -45,11 +45,21 @@ class Config:
         with open(self.config_file, 'w') as f:
             json.dump(existing, f, indent=2)
         
-        # Set restrictive permissions on config file
+        # Set restrictive permissions on config file (user-only access)
         try:
-            os.chmod(self.config_file, 0o600)
-        except OSError:
-            pass  # Windows may not support this mode
+            import sys
+            if sys.platform == "win32":
+                import subprocess
+                # On Windows, use icacls to restrict to current user only
+                subprocess.run(
+                    ["icacls", str(self.config_file), "/inheritance:r",
+                     "/grant:r", f"{os.environ.get('USERNAME', '')}:(R,W)"],
+                    capture_output=True, timeout=5,
+                )
+            else:
+                os.chmod(self.config_file, 0o600)
+        except Exception:
+            pass  # Best-effort permission restriction
         
         print(f"Configuration saved to: {self.config_file}")
     
