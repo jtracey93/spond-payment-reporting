@@ -1,5 +1,8 @@
 """
-Spond API client for fetching payment and member data
+Spond API client for fetching payment and member data.
+
+Uses bearer token authentication. Tokens can be obtained via browser login
+(see browser.py) or provided directly via the --bearer-token CLI flag.
 """
 
 import requests
@@ -10,6 +13,38 @@ from typing import Dict, List, Optional, Tuple
 class SpondAPIError(Exception):
     """Custom exception for Spond API errors"""
     pass
+
+
+def fetch_clubs(bearer_token: str) -> List[Dict]:
+    """
+    Fetch available clubs for the authenticated user.
+
+    This calls the Spond club API without a club ID header to retrieve
+    the list of clubs the user has access to.
+
+    Args:
+        bearer_token (str): Bearer token from authentication
+
+    Returns:
+        List[Dict]: List of club objects with 'id' and 'name' keys
+
+    Raises:
+        SpondAPIError: If the request fails
+    """
+    url = "https://api.spond.com/club/v1/clubs"
+    headers = {
+        "accept": "application/json",
+        "authorization": f"Bearer {bearer_token}",
+        "content-type": "application/json",
+    }
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.HTTPError as e:
+        raise SpondAPIError(f"HTTP error while fetching clubs: {e}")
+    except Exception as e:
+        raise SpondAPIError(f"Unexpected error while fetching clubs: {e}")
 
 
 class SpondAPI:
@@ -30,26 +65,10 @@ class SpondAPI:
         
         # Set up default headers
         self.headers = {
-            "authority": "api.spond.com",
             "accept": "application/json",
-            "accept-language": "en-GB,en;q=0.9,en-US;q=0.8",
-            "api-level": "4.72.0",
             "authorization": f"Bearer {bearer_token}",
-            "cache-control": "no-cache",
-            "origin": "https://club.spond.com",
-            "pragma": "no-cache",
-            "priority": "u=1, i",
-            "referer": "https://club.spond.com/",
-            "sec-ch-ua": '"Not;A=Brand";v="99", "Microsoft Edge";v="139", "Chromium";v="139"',
-            "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-platform": '"Windows"',
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-site",
-            "x-spond-clubid": club_id,
-            "x-spond-membershipauth": "undefined",
             "content-type": "application/json",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0"
+            "x-spond-clubid": club_id,
         }
     
     def _make_request(self, url: str, method: str = "GET") -> Dict:
@@ -85,6 +104,8 @@ class SpondAPI:
             raise SpondAPIError(f"HTTP Error: {e}. Response: {response.text}")
         except json.JSONDecodeError as e:
             raise SpondAPIError(f"JSON Decode Error: {e}. Response: {response.text}")
+        except SpondAPIError:
+            raise
         except Exception as e:
             raise SpondAPIError(f"Unexpected error: {e}")
     

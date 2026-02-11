@@ -4,7 +4,7 @@ Configuration management for Spond reporting tool
 
 import os
 import json
-from typing import Optional, Dict, Any
+from typing import Optional, Dict
 from pathlib import Path
 
 
@@ -16,29 +16,50 @@ class Config:
         self.config_file = self.config_dir / 'config.json'
         self.config_dir.mkdir(exist_ok=True)
     
-    def save_credentials(self, bearer_token: str, club_id: str, 
+    def save_credentials(self, club_id: str,
+                        bearer_token: Optional[str] = None,
                         save_token: bool = False) -> None:
         """
         Save credentials to config file
         
         Args:
-            bearer_token (str): Bearer token
             club_id (str): Club ID
-            save_token (bool): Whether to save the bearer token (default: False for security)
+            bearer_token (str, optional): Bearer token
+            save_token (bool): Whether to save the bearer token
         """
-        config_data = {
-            'club_id': club_id
-        }
-        
-        if save_token:
-            config_data['bearer_token'] = bearer_token
-            print("Warning: Bearer token saved to config file. Keep this file secure!")
+        # Load existing config to preserve fields not being updated
+        existing = {}
+        if self.config_file.exists():
+            try:
+                with open(self.config_file, 'r') as f:
+                    existing = json.load(f)
+            except (json.JSONDecodeError, IOError):
+                pass
+
+        if club_id:
+            existing['club_id'] = club_id
+
+        if save_token and bearer_token:
+            existing['bearer_token'] = bearer_token
         
         with open(self.config_file, 'w') as f:
-            json.dump(config_data, f, indent=2)
+            json.dump(existing, f, indent=2)
         
-        # Set restrictive permissions on config file
-        os.chmod(self.config_file, 0o600)
+        # Set restrictive permissions on config file (user-only access)
+        try:
+            import sys
+            if sys.platform == "win32":
+                import subprocess
+                # On Windows, use icacls to restrict to current user only
+                subprocess.run(
+                    ["icacls", str(self.config_file), "/inheritance:r",
+                     "/grant:r", f"{os.environ.get('USERNAME', '')}:(R,W)"],
+                    capture_output=True, timeout=5,
+                )
+            else:
+                os.chmod(self.config_file, 0o600)
+        except Exception:
+            pass  # Best-effort permission restriction
         
         print(f"Configuration saved to: {self.config_file}")
     
@@ -63,43 +84,44 @@ class Config:
         except (json.JSONDecodeError, IOError) as e:
             print(f"Warning: Could not load config file: {e}")
             return {'bearer_token': None, 'club_id': None}
-    
-    def get_credentials_interactive(self) -> tuple:
+
+    @staticmethod
+    def select_club_interactive(clubs: list) -> str:
         """
-        Get credentials interactively from user input
-        
+        Display available clubs and let the user select one.
+
+        Args:
+            clubs (list): List of club dicts with 'id' and 'name' keys
+
         Returns:
-            tuple: (bearer_token, club_id)
+            str: Selected club ID
+
+        Raises:
+            ValueError: If no clubs are available or selection is invalid
         """
-        # Load existing config
-        saved_creds = self.load_credentials()
-        
-        # Get bearer token
-        if saved_creds['bearer_token']:
-            use_saved = input(f"Use saved bearer token? (y/n) [y]: ").strip().lower()
-            if use_saved in ('', 'y', 'yes'):
-                bearer_token = saved_creds['bearer_token']
-                print("Using saved bearer token")
-            else:
-                bearer_token = input('Enter your Spond Bearer Token: ').strip()
-        else:
-            bearer_token = input('Enter your Spond Bearer Token: ').strip()
-        
-        # Get club ID
-        if saved_creds['club_id']:
-            club_id_prompt = f"Enter your Spond Club ID [{saved_creds['club_id']}]: "
-            club_id = input(club_id_prompt).strip()
-            if not club_id:
-                club_id = saved_creds['club_id']
-                print(f"Using saved club ID: {club_id}")
-        else:
-            club_id = input('Enter your Spond Club ID: ').strip()
-        
-        # Ask if user wants to save credentials
-        if not saved_creds['club_id'] or club_id != saved_creds['club_id']:
-            save_config = input("Save club ID for future use? (y/n) [y]: ").strip().lower()
-            if save_config in ('', 'y', 'yes'):
-                save_token = input("Save bearer token too? (NOT recommended for security) (y/n) [n]: ").strip().lower()
-                self.save_credentials(bearer_token, club_id, save_token in ('y', 'yes'))
-        
-        return bearer_token, club_id
+        if not clubs:
+            raise ValueError("No clubs found for this account")
+
+        if len(clubs) == 1:
+            selected = clubs[0]
+            print(f"\nUsing club: {selected.get('name', 'Unknown')}")
+            return selected['id']
+
+        print("\nAvailable clubs:")
+        for i, club in enumerate(clubs, 1):
+            name = club.get('name', 'Unknown')
+            club_id = club.get('id', '')
+            print(f"  {i}. {name} ({club_id})")
+
+        while True:
+            selection = input(f"\nSelect a club (1-{len(clubs)}): ").strip()
+            try:
+                index = int(selection)
+                if 1 <= index <= len(clubs):
+                    selected = clubs[index - 1]
+                    print(f"Selected: {selected.get('name', 'Unknown')}")
+                    return selected['id']
+                else:
+                    print(f"Please enter a number between 1 and {len(clubs)}")
+            except ValueError:
+                print(f"Please enter a valid number between 1 and {len(clubs)}")

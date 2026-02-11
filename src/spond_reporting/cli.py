@@ -8,7 +8,8 @@ import sys
 from pathlib import Path
 
 from .config import Config
-from .api import SpondAPI, SpondAPIError
+from .api import SpondAPI, SpondAPIError, fetch_clubs
+from .browser import get_token_from_browser
 from .report import PaymentReportGenerator
 
 
@@ -19,12 +20,13 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  spond-report                          # Interactive mode with prompts
+  spond-report                          # Interactive: browser login + club selection
   spond-report -o my_report.xlsx        # Specify output file
   spond-report --title-filter "2025"    # Filter for payments containing "2025"
-  spond-report --title-filter "Match Fee" --title-filter "2025"  # Filter for payments containing BOTH "Match Fee" AND "2025"
-  spond-report --title-filter "Match Fee" --output matches.xlsx  # Filter match fees only
-  spond-report --bearer-token TOKEN --club-id ID  # Provide credentials directly
+  spond-report --title-filter "Match Fee" --title-filter "2025"  # AND filtering
+  spond-report --bearer-token TOKEN --club-id ID  # Provide token directly
+  spond-report --bearer-token TOKEN               # Provide token, select club
+  spond-report --login                  # Force browser login (ignore saved token)
   spond-report --reset-config           # Reset saved configuration
 
 For more information, visit: https://github.com/jtracey93/spond-payment-reporting
@@ -46,7 +48,19 @@ For more information, visit: https://github.com/jtracey93/spond-payment-reportin
     parser.add_argument(
         '--club-id',
         type=str,
-        help='Spond Club ID'
+        help='Spond Club ID (if not provided, available clubs will be listed for selection)'
+    )
+    
+    parser.add_argument(
+        '--login',
+        action='store_true',
+        help='Force browser login (ignore any saved token)'
+    )
+    
+    parser.add_argument(
+        '--private',
+        action='store_true',
+        help='Use InPrivate/Incognito mode for browser login (use if Edge crashes)'
     )
     
     parser.add_argument(
@@ -87,30 +101,54 @@ For more information, visit: https://github.com/jtracey93/spond-payment-reportin
         return 0
     
     try:
-        # Initialize components
         config = Config()
         
-        # Get credentials
-        if args.bearer_token and args.club_id:
-            bearer_token = args.bearer_token
-            club_id = args.club_id
-            if args.verbose:
-                print("Using credentials from command line arguments")
+        # --- Determine bearer token ---
+        if args.bearer_token:
+            token = args.bearer_token
+        elif args.login:
+            # Force fresh browser login
+            token = get_token_from_browser(force_private=args.private)
+            config.save_credentials(club_id="", bearer_token=token, save_token=True)
         else:
-            print("Spond Payment Reporting Tool v1.0.0")
-            print("=====================================")
-            print()
-            bearer_token, club_id = config.get_credentials_interactive()
-        
-        if not bearer_token or not club_id:
-            print("Error: Bearer token and club ID are required")
-            return 1
-        
-        # Initialize API client
-        if args.verbose:
-            print(f"Connecting to Spond API for club: {club_id}")
-        
-        api = SpondAPI(bearer_token, club_id)
+            # Try saved config first
+            saved = config.load_credentials()
+            token = saved.get('bearer_token')
+            if token:
+                # Verify the saved token still works
+                print("Using saved bearer token...")
+                try:
+                    fetch_clubs(token)
+                except SpondAPIError:
+                    print("Saved token has expired. Opening browser to log in again...")
+                    token = get_token_from_browser(force_private=args.private)
+                    config.save_credentials(
+                        club_id=saved.get('club_id', ''),
+                        bearer_token=token,
+                        save_token=True,
+                    )
+            else:
+                print("Spond Payment Reporting Tool v1.0.0")
+                print("=====================================")
+                print()
+                print("No saved token found. Opening browser to log in...")
+                token = get_token_from_browser(force_private=args.private)
+
+        # --- Determine club ID ---
+        club_id = args.club_id
+        if not club_id:
+            saved = config.load_credentials()
+            club_id = saved.get('club_id') or None
+
+        if not club_id:
+            print("Fetching available clubs...")
+            clubs = fetch_clubs(token)
+            club_id = Config.select_club_interactive(clubs)
+
+        # Save token + club for next time
+        config.save_credentials(club_id=club_id, bearer_token=token, save_token=True)
+
+        api = SpondAPI(token, club_id)
         
         # Fetch data
         print("Fetching members...")
