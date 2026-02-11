@@ -2,128 +2,80 @@
 
 <a href="https://www.buymeacoffee.com/jacktracey" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
-A Python tool for generating payment reports from the Spond club management system. This tool helps club administrators track outstanding payments and generate detailed Excel reports.
+A simple tool for generating payment reports from the Spond club management system. It helps club administrators see who still owes money and produces an Excel spreadsheet you can share with your committee.
 
-## Features
+## What It Does
 
-- 🔐 Email/password authentication via the [spond](https://pypi.org/project/spond/) library — no need to extract bearer tokens from browser developer tools
-- 📱 Two-factor authentication (2FA) support — users with SMS-based 2FA enabled are prompted for their verification code interactively
-- 🏢 Interactive club selection — if no club ID is provided, available clubs are fetched and displayed for selection
-- 📊 Excel reports with summary and detailed views
-- 🖥️ Command-line interface for easy automation
-- 🔄 Proper error handling and retry logic
-- 📱 Modern Python package structure for easy installation
+- Connects to your Spond club account
+- Downloads all payment information
+- Creates an Excel report showing who has outstanding payments
+- Lets you filter by payment name (e.g. "Match Fee", "2025", "Membership")
 
-## Installation
+## Getting Started
 
-### Option 1: Install from Source
+### 1. Install Python
+
+If you don't already have Python installed:
+
+- **Windows**: Download from [python.org](https://www.python.org/downloads/) and run the installer. **Tick the "Add Python to PATH" checkbox** during installation.
+- **Mac**: Download from [python.org](https://www.python.org/downloads/) or install via `brew install python`.
+
+### 2. Download This Tool
+
+Open a terminal (Command Prompt on Windows, Terminal on Mac) and run:
 
 ```bash
-# Clone the repository
 git clone https://github.com/jtracey93/spond-payment-reporting.git
 cd spond-payment-reporting
-
-# Install the package
 pip install -e .
 ```
 
-### Option 2: Install Dependencies Only
+> **Tip:** If `pip` doesn't work, try `pip3` instead.
 
-If you prefer to run the script directly:
-
-```bash
-pip install -r requirements.txt
-```
-
-## Quick Start
-
-### Using the Command-Line Tool
-
-After installation, you can use the `spond-report` command:
+### 3. Run It
 
 ```bash
-# Interactive mode (recommended for first-time users)
-# Will prompt for your Spond email, password, and club selection
 spond-report
-
-# Specify output file
-spond-report -o my_report.xlsx
-
-# Provide email directly (will prompt for password and club selection)
-spond-report --email user@example.com
-
-# Provide email and club ID directly (will prompt for password securely)
-spond-report --email user@example.com --club-id YOUR_CLUB_ID
-
-# Legacy: provide bearer token directly (useful for automation)
-spond-report --bearer-token YOUR_TOKEN --club-id YOUR_CLUB_ID
-
-# Reset saved configuration
-spond-report --reset-config
 ```
 
-### Using as a Python Module
+That's it! The tool will walk you through the rest.
 
-```python
-from spond_reporting import SpondAPI, PaymentReportGenerator
+## How to Log In
 
-# Authenticate with email/password (recommended)
-# If 2FA is enabled, you'll be prompted for the SMS code interactively
-api = SpondAPI.from_credentials("your@email.com", "your_password", "your_club_id")
+The tool needs a "bearer token" from Spond to access your club data. There are two ways to get one:
 
-# Or provide a custom 2FA handler for non-interactive use
-# api = SpondAPI.from_credentials(
-#     "your@email.com", "your_password", "your_club_id",
-#     two_factor_callback=lambda phone: input(f"Enter SMS code sent to {phone}: ")
-# )
+### Option A: Browser Login (Easiest)
 
-# Or use a bearer token directly (legacy)
-# api = SpondAPI("your_bearer_token", "your_club_id")
+The tool will:
 
-# Fetch data
-members, member_map = api.get_members()
-payments = api.get_payments()
+1. Open a browser window to the Spond Club login page
+2. You log in as normal (including any 2FA/SMS verification)
+3. The tool grabs your login token automatically
+4. The token is saved so you don't have to log in every time
 
-# Generate report
-generator = PaymentReportGenerator()
-granular_rows, stats = generator.process_payment_data(payments, member_map, api)
-excel_file = generator.generate_excel_report(granular_rows, "report.xlsx")
-```
+Just run `spond-report` and follow the prompts.
 
-## Authentication
+### Option B: Copy the Token Manually
 
-The tool supports two authentication methods:
+If you don't want to install the browser extras, the tool will open the Spond login page in your browser and show you how to copy the token:
 
-### 1. Email/Password Login (Recommended)
+1. Log in to [club.spond.com](https://club.spond.com/) in your browser
+2. Press **F12** to open Developer Tools
+3. Click the **Network** tab
+4. Refresh the page
+5. Click on any request to `api.spond.com` in the list
+6. Look for the **Authorization** header on the right side
+7. Copy the long string after "Bearer " — that's your token
 
-Simply use your Spond account email and password. The tool uses the [spond](https://pypi.org/project/spond/) library to authenticate securely. Your password is never stored — only your email and club ID are saved for convenience.
-
-**Two-factor authentication (2FA)**: If your Spond account has 2-step verification enabled, you will be prompted to enter the SMS verification code sent to your phone during login. This works automatically — no extra configuration needed.
+Then paste it when the tool asks, or pass it directly:
 
 ```bash
-# Interactive mode will prompt for email, password, and club ID
-# If 2FA is enabled, you'll also be prompted for the SMS code
-spond-report
-
-# Or provide email via CLI (password prompted securely)
-spond-report --email user@example.com --club-id YOUR_CLUB_ID
+spond-report --bearer-token YOUR_TOKEN_HERE
 ```
 
-### 2. Bearer Token (Legacy)
+### Choosing Your Club
 
-If you prefer, you can still use a bearer token extracted from browser developer tools:
-
-1. Log into Spond Club in your web browser
-2. Open Developer Tools (F12)
-3. Go to the Network tab
-4. Refresh the page or navigate to another section
-5. Look for API requests to `api.spond.com`
-6. In the request headers, find the `authorization` header
-7. Copy the value after "Bearer " (it's a long string)
-
-### Getting Your Club ID
-
-The easiest way is to let the tool find your clubs automatically. When you run the tool without a `--club-id`, it will fetch your available clubs and display them in a numbered list for you to choose from:
+The first time you run the tool, it will show you a list of clubs on your account and ask you to pick one:
 
 ```
 Available clubs:
@@ -134,166 +86,114 @@ Select a club (1-2): 1
 Selected: My Cricket Club
 ```
 
-Alternatively, you can find it manually:
-1. In the browser Network tab, look for the `x-spond-clubid` header in API requests
-2. Copy this value (it's a GUID like `12345678-1234-1234-1234-123456789ABC`)
+Your choice is saved so you won't be asked again.
 
-## Usage Examples
+## Common Commands
 
-### Basic Usage
+| What you want to do | Command |
+|---|---|
+| Run with all defaults | `spond-report` |
+| Save the report with a specific name | `spond-report -o my_report.xlsx` |
+| Show only 2025 payments | `spond-report --title-filter "2025"` |
+| Show only match fees | `spond-report --title-filter "Match Fee"` |
+| Show only 2025 match fees | `spond-report --title-filter "Match Fee" --title-filter "2025"` |
+| Force a fresh browser login | `spond-report --login` |
+| Login in InPrivate mode | `spond-report --login --private` |
+| Pass a token directly | `spond-report --bearer-token YOUR_TOKEN` |
+| Pass a token and club ID directly | `spond-report --bearer-token YOUR_TOKEN --club-id YOUR_CLUB_ID` |
+| Clear all saved settings | `spond-report --reset-config` |
+| Show help | `spond-report --help` |
 
+## Filtering Payments
+
+You can narrow down the report to specific payments using `--title-filter`. The filter checks if the payment name contains the text you provide (not case-sensitive).
+
+**One filter:**
 ```bash
-# Run interactively
-spond-report
+spond-report --title-filter "2025"
 ```
 
-The tool will prompt you for your credentials and offer to save your Club ID for future use.
-
-### Advanced Usage
-
+**Multiple filters (AND logic)** — payment must match ALL filters:
 ```bash
-# Generate report with custom filename
-spond-report -o "monthly_report_$(date +%Y%m%d).xlsx"
-
-# Use in a script with environment variables (legacy bearer token)
-export SPOND_BEARER_TOKEN="your_token_here"
-export SPOND_CLUB_ID="your_club_id_here"
-spond-report --bearer-token "$SPOND_BEARER_TOKEN" --club-id "$SPOND_CLUB_ID"
-
-# Provide email via CLI (password will be prompted securely)
-spond-report --email user@example.com --club-id "$SPOND_CLUB_ID"
-
-# Verbose output for debugging
-spond-report --verbose
+spond-report --title-filter "Match Fee" --title-filter "2025"
 ```
 
-### Title Filtering
-
-Filter payments by title to focus on specific types of payments. Supports single or multiple filters:
-
+**Save the filtered report:**
 ```bash
-# Single filter examples
-spond-report --title-filter "2025"              # All 2025 payments
-spond-report --title-filter "Match Fee"         # All match fees
-spond-report --title-filter "Membership"        # Membership payments
-spond-report --title-filter "T20"               # T20 tournaments
-spond-report --title-filter "Donation"          # Donation payments
-
-# Multiple filters (AND logic) - payment must contain ALL terms
-spond-report --title-filter "Match Fee" --title-filter "2025"    # 2025 match fees only
-spond-report --title-filter "T20" --title-filter "2025"          # 2025 T20 matches only
-spond-report --title-filter "1st XI" --title-filter "2025"       # First team 2025 matches
-spond-report --title-filter "Away" --title-filter "2025"         # Away matches in 2025
-
-# Complete examples with output files
-spond-report --title-filter "Match Fee" --title-filter "2025" --output "2025_match_fees.xlsx"
-spond-report --title-filter "Membership" --output "membership_outstanding.xlsx"
-spond-report --title-filter "T20" --title-filter "2025" --output "t20_2025.xlsx"
+spond-report --title-filter "Match Fee" --title-filter "2025" -o "2025_match_fees.xlsx"
 ```
 
-**Filter Results Example:**
-- All payments: 141 outstanding items
-- `--title-filter "2025"`: 85 outstanding items  
-- `--title-filter "Match Fee"`: 100 outstanding items
-- `--title-filter "Match Fee" --title-filter "2025"`: 44 outstanding items
-- `--title-filter "T20" --title-filter "2025"`: 13 outstanding items
+### Example Results
 
-## Output
+| Filters used | Outstanding items |
+|---|---|
+| None (all payments) | 141 |
+| `"2025"` | 85 |
+| `"Match Fee"` | 100 |
+| `"Match Fee"` + `"2025"` | 44 |
+| `"T20"` + `"2025"` | 13 |
 
-The tool generates an Excel file with two sheets:
+## What the Report Looks Like
 
-1. **Summary**: Aggregated view showing total amount owed per member
-2. **Granular Details**: Detailed breakdown of each unpaid payment
+The Excel file contains two sheets:
 
-## Configuration
+1. **Summary** — one row per member showing the total amount they owe
+2. **Granular Details** — every individual unpaid payment broken out
 
-The tool can save your email and Club ID in a configuration file for convenience:
+## Where Settings Are Saved
 
-- **Location**: `~/.spond-reporting/config.json`
-- **Permissions**: Automatically set to read-only for the user (600)
-- **Security**: Passwords are never saved; only email and Club ID are stored
+Your token and club ID are saved in a file at:
+
+- **Windows**: `C:\Users\YourName\.spond-reporting\config.json`
+- **Mac/Linux**: `~/.spond-reporting/config.json`
+
+To clear everything and start fresh: `spond-report --reset-config`
+
+## Troubleshooting
+
+| Problem | What to do |
+|---|---|
+| "Token has expired" | Run `spond-report --login` to log in again |
+| Browser won't open (already running) | Close all browser windows (check system tray), then re-run |
+| Browser opens then crashes | Run `spond-report --login --private` to use InPrivate mode |
+| Tool can't find your clubs | Check your token is correct — try logging in again |
+| "HTTP 401/403 errors" | Your token has expired — log in again |
+| No payments showing | All payments might be up to date! Try removing filters. |
+| `pip` command not found | Try `pip3` instead, or reinstall Python with "Add to PATH" ticked |
 
 ## Development
 
-### Setting Up Development Environment
+### Setting Up a Dev Environment
 
 ```bash
-# Clone the repository
 git clone https://github.com/jtracey93/spond-payment-reporting.git
 cd spond-payment-reporting
-
-# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install in development mode
-pip install -e ".[dev]"
+# Windows:
+venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
 
-# Run tests
+pip install -e ".[dev,browser]"
 pytest
-
-# Format code
-black src/
-
-# Lint code
-flake8 src/
 ```
 
 ### Project Structure
 
 ```
-spond-payment-reporting/
-├── src/
-│   └── spond_reporting/
-│       ├── __init__.py
-│       ├── api.py          # Spond API client
-│       ├── cli.py          # Command-line interface
-│       ├── config.py       # Configuration management
-│       └── report.py       # Report generation
-├── python/                 # Original script location
-├── pwsh/                   # PowerShell version
-├── setup.py
-├── requirements.txt
-└── README.md
+src/spond_reporting/
+├── __init__.py      # Package init
+├── api.py           # Spond API client
+├── browser.py       # Browser-based token extraction
+├── cli.py           # Command-line interface
+├── config.py        # Settings management
+└── report.py        # Excel report generation
 ```
-
-## Security Considerations
-
-- 🔒 Passwords are prompted securely and never saved to disk
-- 🏠 Config files are stored in your home directory with restricted permissions
-- ⚠️ Legacy bearer token mode is still available but email/password login is recommended
-- 🔄 The [spond](https://pypi.org/project/spond/) library handles authentication, so you no longer need to manually extract tokens from browser developer tools
-
-## Troubleshooting
-
-### Common Issues
-
-1. **"Authentication failed"**: Check your email and password are correct
-2. **"Two-factor authentication is required"**: Your account has 2FA enabled. When using interactive mode, you'll be prompted for the SMS code. If using a non-interactive workflow, use `--bearer-token` instead.
-3. **"Two-factor verification failed"**: The SMS code you entered was incorrect or expired. Try logging in again to receive a new code.
-4. **"HTTP 401/403 errors"**: Check your club ID, or try re-authenticating
-5. **"No outstanding payments found"**: All payments may be up to date!
-
-### Getting Help
-
-```bash
-# Show help
-spond-report --help
-
-# Enable verbose output for debugging
-spond-report --verbose
-
-# Reset configuration if you're having issues
-spond-report --reset-config
-```
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE).
 
 ## Disclaimer
 
