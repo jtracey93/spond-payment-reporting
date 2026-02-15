@@ -32,8 +32,6 @@ Visit **[https://jtracey93.github.io/spond-payment-reporting/](https://jtracey93
 
 ### Option 2: Install the Command-Line Tool
 
-### Option 2: Install the Command-Line Tool
-
 #### 1. Install Python
 
 If you don't already have Python installed:
