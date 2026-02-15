@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spond Payment Reporting - Web Viewer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Spond Payment Reporting</h1>
+            <p class="subtitle">View and analyze payment data from your Spond club</p>
+        </header>
+
+        <!-- Authentication Section -->
+        <section id="auth-section" class="card">
+            <h2>Authentication</h2>
+            <p class="info-text">
+                To use this app, you need a bearer token from Spond. 
+                <a href="#" id="show-instructions">How to get a bearer token?</a>
+            </p>
+            
+            <div id="token-instructions" class="instructions hidden">
+                <h3>How to get your bearer token:</h3>
+                <ol>
+                    <li>Log in to <a href="https://club.spond.com/" target="_blank">club.spond.com</a> in your browser</li>
+                    <li>Press <strong>F12</strong> to open Developer Tools</li>
+                    <li>Click the <strong>Network</strong> tab</li>
+                    <li>Refresh the page</li>
+                    <li>Click on any request to <code>api.spond.com</code> in the list</li>
+                    <li>Look for the <strong>Authorization</strong> header on the right side</li>
+                    <li>Copy the long string after "Bearer " — that's your token</li>
+                </ol>
+                <p class="warning">⚠️ Keep your bearer token private! Don't share it with anyone.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="bearer-token">Bearer Token:</label>
+                <input type="password" id="bearer-token" placeholder="Enter your bearer token">
+                <button id="toggle-token-visibility" class="btn-small" type="button">Show</button>
+            </div>
+
+            <div class="form-group">
+                <label for="club-id">Club ID:</label>
+                <input type="text" id="club-id" placeholder="Enter club ID or fetch from available clubs">
+                <button id="fetch-clubs-btn" class="btn-small" type="button">Fetch Clubs</button>
+            </div>
+
+            <div id="clubs-list" class="hidden"></div>
+
+            <button id="load-data-btn" class="btn-primary" disabled>Load Payment Data</button>
+            <span id="auth-status" class="status-message"></span>
+        </section>
+
+        <!-- Filters Section -->
+        <section id="filters-section" class="card hidden">
+            <h2>Filters & Sorting</h2>
+            <div class="filters-container">
+                <div class="form-group">
+                    <label for="search-filter">Search:</label>
+                    <input type="text" id="search-filter" placeholder="Search by name, payment, etc.">
+                </div>
+
+                <div class="form-group">
+                    <label for="sort-by">Sort By:</label>
+                    <select id="sort-by">
+                        <option value="member-desc">Member Name (A-Z)</option>
+                        <option value="member-asc">Member Name (Z-A)</option>
+                        <option value="amount-desc">Amount (Highest First)</option>
+                        <option value="amount-asc">Amount (Lowest First)</option>
+                        <option value="payment-desc">Payment Name (A-Z)</option>
+                        <option value="payment-asc">Payment Name (Z-A)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="view-type">View:</label>
+                    <select id="view-type">
+                        <option value="granular">Granular Details</option>
+                        <option value="summary">Summary by Member</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="export-buttons">
+                <button id="export-csv-btn" class="btn-secondary">Export as CSV</button>
+                <button id="export-excel-btn" class="btn-secondary">Export as Excel</button>
+                <button id="export-pdf-btn" class="btn-secondary">Export as PDF</button>
+            </div>
+        </section>
+
+        <!-- Data Section -->
+        <section id="data-section" class="card hidden">
+            <div class="data-header">
+                <h2>Payment Data</h2>
+                <div id="stats" class="stats"></div>
+            </div>
+            
+            <div id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Loading payment data...</p>
+            </div>
+
+            <div id="error-message" class="error-message hidden"></div>
+
+            <div id="table-container">
+                <table id="data-table">
+                    <thead id="table-header"></thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>
+            Spond Payment Reporting Tool | 
+            <a href="https://github.com/jtracey93/spond-payment-reporting" target="_blank">GitHub</a> |
+            Not affiliated with Spond
+        </p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

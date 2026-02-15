@@ -4,23 +4,44 @@
 
 A simple tool for generating payment reports from the Spond club management system. It helps club administrators see who still owes money and produces an Excel spreadsheet you can share with your committee.
 
+## 🌐 Web App Available!
+
+**New!** You can now use this tool directly in your browser without installing anything:
+
+👉 **[Launch Web App](https://jtracey93.github.io/spond-payment-reporting/)** 👈
+
+The web app provides the same functionality with an easy-to-use interface, filtering, sorting, and export capabilities. Perfect if you don't want to install Python or prefer a graphical interface.
+
+[Learn more about the web app →](docs/README.md)
+
+---
+
 ## What It Does
 
 - Connects to your Spond club account
 - Downloads all payment information
 - Creates an Excel report showing who has outstanding payments
 - Lets you filter by payment name (e.g. "Match Fee", "2025", "Membership")
+- **Web version**: View and analyze data in your browser with filtering, sorting, and export options
 
 ## Getting Started
 
-### 1. Install Python
+### Option 1: Use the Web App (No Installation Required)
+
+Visit **[https://jtracey93.github.io/spond-payment-reporting/](https://jtracey93.github.io/spond-payment-reporting/)** and follow the on-screen instructions.
+
+### Option 2: Install the Command-Line Tool
+
+### Option 2: Install the Command-Line Tool
+
+#### 1. Install Python
 
 If you don't already have Python installed:
 
 - **Windows**: Download from [python.org](https://www.python.org/downloads/) and run the installer. **Tick the "Add Python to PATH" checkbox** during installation.
 - **Mac**: Download from [python.org](https://www.python.org/downloads/) or install via `brew install python`.
 
-### 2. Download This Tool
+#### 2. Download This Tool
 
 Open a terminal (Command Prompt on Windows, Terminal on Mac) and run:
 
@@ -32,7 +53,7 @@ pip install -e .
 
 > **Tip:** If `pip` doesn't work, try `pip3` instead.
 
-### 3. Run It
+#### 3. Run It
 
 ```bash
 spond-report
