@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spond Web App - Test Page</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1rem;
+            line-height: 1.6;
+        }
+        h1 { color: #2563eb; }
+        .test-section {
+            background: #f8fafc;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            border-left: 4px solid #2563eb;
+        }
+        .success { color: #10b981; }
+        .info { color: #2563eb; }
+        ul { margin-top: 0.5rem; }
+        code {
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>✅ Spond Payment Reporting Web App - Test Page</h1>
+    
+    <div class="test-section">
+        <h2 class="success">✓ Web App Created Successfully</h2>
+        <p>The static web app has been created with the following features:</p>
+        <ul>
+            <li>✅ Responsive HTML interface with modern design</li>
+            <li>✅ CSS styling with mobile support and print-friendly PDF export</li>
+            <li>✅ JavaScript app with API integration to Spond endpoints</li>
+            <li>✅ Bearer token authentication</li>
+            <li>✅ Club selection functionality</li>
+            <li>✅ Payment data loading and processing</li>
+            <li>✅ Granular and summary views</li>
+            <li>✅ Search and filtering capabilities</li>
+            <li>✅ Sorting by member, amount, and payment name</li>
+            <li>✅ Export to CSV, Excel, and PDF</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2 class="info">📁 Files Created</h2>
+        <ul>
+            <li><code>docs/index.html</code> - Main application interface</li>
+            <li><code>docs/app.js</code> - Application logic and API integration</li>
+            <li><code>docs/styles.css</code> - Styling with responsive and print media queries</li>
+            <li><code>docs/README.md</code> - Documentation for the web app</li>
+            <li><code>docs/.nojekyll</code> - GitHub Pages configuration</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2 class="info">🚀 Next Steps</h2>
+        <ol>
+            <li>Enable GitHub Pages in repository settings:
+                <ul>
+                    <li>Go to Settings → Pages</li>
+                    <li>Source: Deploy from a branch</li>
+                    <li>Branch: Select <code>main</code> (or current branch) and <code>/docs</code> folder</li>
+                    <li>Save</li>
+                </ul>
+            </li>
+            <li>Wait a few minutes for GitHub Pages to deploy</li>
+            <li>Access the app at: <a href="https://jtracey93.github.io/spond-payment-reporting/" target="_blank">https://jtracey93.github.io/spond-payment-reporting/</a></li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2 class="info">🧪 Testing the Web App</h2>
+        <p>To test the web app:</p>
+        <ol>
+            <li>Open <a href="index.html">index.html</a> in your browser</li>
+            <li>You'll need a valid Spond bearer token to load real data</li>
+            <li>Alternatively, use the "Fetch Clubs" feature to verify API connectivity</li>
+        </ol>
+        <p><strong>Note:</strong> The app makes direct API calls to Spond's servers. CORS restrictions may apply depending on your browser and Spond's API configuration.</p>
+    </div>
+
+    <div class="test-section">
+        <h2 class="success">✓ Features Implemented</h2>
+        <h3>Authentication</h3>
+        <ul>
+            <li>Bearer token input with show/hide toggle</li>
+            <li>Club ID input with fetch clubs functionality</li>
+            <li>Interactive club selection from user's available clubs</li>
+        </ul>
+        
+        <h3>Data Display</h3>
+        <ul>
+            <li>Granular details view (individual unpaid payments)</li>
+            <li>Summary view (aggregated by member)</li>
+            <li>Statistics display (total items, amount, members, payments)</li>
+        </ul>
+        
+        <h3>Filtering & Sorting</h3>
+        <ul>
+            <li>Text search across member names, payment names, and currency</li>
+            <li>Sort by member name (A-Z, Z-A)</li>
+            <li>Sort by amount (highest first, lowest first)</li>
+            <li>Sort by payment name (A-Z, Z-A)</li>
+        </ul>
+        
+        <h3>Export Options</h3>
+        <ul>
+            <li>CSV export with current filters applied</li>
+            <li>Excel export (.xls format)</li>
+            <li>PDF export via browser print dialog</li>
+        </ul>
+        
+        <h3>User Experience</h3>
+        <ul>
+            <li>Responsive design (works on mobile, tablet, desktop)</li>
+            <li>Loading indicators</li>
+            <li>Error messages with helpful guidance</li>
+            <li>Status updates during data loading</li>
+            <li>Print-optimized styles for PDF generation</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2 class="info">📚 Documentation</h2>
+        <p>Documentation has been updated:</p>
+        <ul>
+            <li>Main README.md updated with web app information</li>
+            <li>docs/README.md created with detailed usage instructions</li>
+            <li>Instructions on how to obtain bearer token included</li>
+            <li>Troubleshooting section added</li>
+        </ul>
+    </div>
+
+    <hr style="margin: 2rem 0;">
+    
+    <p style="text-align: center; color: #64748b;">
+        <a href="index.html">→ Open Web App</a> | 
+        <a href="https://github.com/jtracey93/spond-payment-reporting" target="_blank">View on GitHub</a>
+    </p>
+</body>
+</html>

@@ -434,3 +434,72 @@ footer a:hover {
         padding: 0.5rem;
     }
 }
+
+/* Print styles for PDF export */
+@media print {
+    body {
+        background-color: white;
+    }
+
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    header {
+        margin-bottom: 1rem;
+    }
+
+    #auth-section,
+    #filters-section,
+    footer,
+    .export-buttons,
+    .btn-primary,
+    .btn-secondary,
+    .btn-small {
+        display: none !important;
+    }
+
+    .card {
+        box-shadow: none;
+        border: none;
+        page-break-inside: avoid;
+    }
+
+    .data-header {
+        margin-bottom: 1rem;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        background-color: #f0f0f0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    th {
+        border: 1px solid #333 !important;
+        padding: 0.5rem !important;
+        background-color: #f0f0f0 !important;
+    }
+
+    td {
+        border: 1px solid #333 !important;
+        padding: 0.5rem !important;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: #f9f9f9 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Ensure page breaks don't split rows */
+    tr {
+        page-break-inside: avoid;
+    }
+}
