@@ -120,6 +120,43 @@ header h1 {
     margin-top: 1rem;
 }
 
+.cors-warning {
+    background: #fef3c7;
+    border: 2px solid var(--warning-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.cors-warning h3 {
+    color: var(--warning-color);
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.cors-warning p {
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+.cors-warning ul {
+    margin-left: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.cors-warning li {
+    margin-bottom: 0.5rem;
+}
+
+.cors-warning a {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.cors-warning a:hover {
+    text-decoration: underline;
+}
+
 .form-group {
     margin-bottom: 1rem;
     display: flex;

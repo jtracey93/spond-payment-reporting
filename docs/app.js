@@ -54,6 +54,16 @@ function initEventListeners() {
         elements.tokenInstructions.classList.toggle('hidden');
     });
     
+    // Add CORS help toggle
+    const showCorsHelpLink = document.getElementById('show-cors-help');
+    const corsHelpDiv = document.getElementById('cors-help');
+    if (showCorsHelpLink && corsHelpDiv) {
+        showCorsHelpLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            corsHelpDiv.classList.toggle('hidden');
+        });
+    }
+    
     elements.bearerTokenInput.addEventListener('input', updateLoadButtonState);
     elements.clubIdInput.addEventListener('input', updateLoadButtonState);
     
@@ -107,8 +117,7 @@ async function makeApiRequest(endpoint, method = 'GET') {
     try {
         const response = await fetch(url, {
             method,
-            headers,
-            mode: 'cors'
+            headers
         });
         
         if (!response.ok) {
@@ -118,6 +127,12 @@ async function makeApiRequest(endpoint, method = 'GET') {
         return await response.json();
     } catch (error) {
         console.error('API Request failed:', error);
+        
+        // Detect CORS errors
+        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+            throw new Error('CORS_ERROR: Unable to connect to Spond API. This is likely due to CORS restrictions. Please see the troubleshooting section below for solutions.');
+        }
+        
         throw error;
     }
 }
@@ -146,7 +161,11 @@ async function fetchClubs() {
         displayClubs(clubs);
         showStatus(`Found ${clubs.length} club(s)`, 'success');
     } catch (error) {
-        showError(`Failed to fetch clubs: ${error.message}`);
+        if (error.message.startsWith('CORS_ERROR:')) {
+            showError(error.message.replace('CORS_ERROR: ', '') + ' See solutions at: https://github.com/jtracey93/spond-payment-reporting#cors-workarounds');
+        } else {
+            showError(`Failed to fetch clubs: ${error.message}`);
+        }
     }
 }
 
@@ -223,7 +242,11 @@ async function loadPaymentData() {
         
         showStatus('Data loaded successfully!', 'success');
     } catch (error) {
-        showError(`Failed to load data: ${error.message}. Please check your bearer token and club ID.`);
+        if (error.message.startsWith('CORS_ERROR:')) {
+            showError(error.message.replace('CORS_ERROR: ', '') + ' See solutions at: https://github.com/jtracey93/spond-payment-reporting#cors-workarounds');
+        } else {
+            showError(`Failed to load data: ${error.message}. Please check your bearer token and club ID.`);
+        }
     } finally {
         showLoading(false);
     }

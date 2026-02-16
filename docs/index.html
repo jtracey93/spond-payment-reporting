@@ -16,6 +16,42 @@
         <!-- Authentication Section -->
         <section id="auth-section" class="card">
             <h2>Authentication</h2>
+            
+            <div class="cors-warning">
+                <h3>⚠️ Important: CORS Limitation</h3>
+                <p>This web app makes direct API calls to Spond from your browser. Due to CORS (Cross-Origin Resource Sharing) restrictions, this may not work in all browsers or configurations.</p>
+                <p><strong>If the app hangs or fails to load data:</strong></p>
+                <ul>
+                    <li><strong>Option 1:</strong> Install a CORS browser extension (search for "CORS Unblock" or "Allow CORS" in your browser's extension store)</li>
+                    <li><strong>Option 2:</strong> Use the <a href="https://github.com/jtracey93/spond-payment-reporting#option-2-install-the-command-line-tool" target="_blank">Python CLI tool</a> instead (no CORS restrictions)</li>
+                </ul>
+                <p><a href="#cors-help" id="show-cors-help">Learn more about CORS workarounds →</a></p>
+            </div>
+            
+            <div id="cors-help" class="instructions hidden">
+                <h3>CORS Workarounds</h3>
+                <p><strong>What is CORS?</strong> CORS is a security feature in browsers that prevents websites from making requests to different domains. Spond's API doesn't allow browser-based requests from GitHub Pages.</p>
+                
+                <h4>Solution 1: Browser Extension (Easiest)</h4>
+                <ol>
+                    <li>Install a CORS extension for your browser:
+                        <ul>
+                            <li><strong>Chrome/Edge:</strong> "Allow CORS: Access-Control-Allow-Origin" or "CORS Unblock"</li>
+                            <li><strong>Firefox:</strong> "CORS Everywhere" or "Allow CORS"</li>
+                        </ul>
+                    </li>
+                    <li>Enable the extension (click its icon in your browser toolbar)</li>
+                    <li>Reload this page and try again</li>
+                    <li><strong>Important:</strong> Disable the extension when not using this app for security</li>
+                </ol>
+                
+                <h4>Solution 2: Python CLI Tool (Recommended)</h4>
+                <p>The Python command-line tool has no CORS restrictions and works reliably. See the <a href="https://github.com/jtracey93/spond-payment-reporting#option-2-install-the-command-line-tool" target="_blank">installation guide</a>.</p>
+                
+                <h4>Solution 3: Local Development Server</h4>
+                <p>Run the web app on a local server that can proxy requests to avoid CORS. This requires technical setup.</p>
+            </div>
+            
             <p class="info-text">
                 To use this app, you need a bearer token from Spond. 
                 <a href="#" id="show-instructions">How to get a bearer token?</a>

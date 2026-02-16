@@ -10,7 +10,9 @@ A simple tool for generating payment reports from the Spond club management syst
 
 👉 **[Launch Web App](https://jtracey93.github.io/spond-payment-reporting/)** 👈
 
-The web app provides the same functionality with an easy-to-use interface, filtering, sorting, and export capabilities. Perfect if you don't want to install Python or prefer a graphical interface.
+The web app provides the same functionality with an easy-to-use interface, filtering, sorting, and export capabilities.
+
+⚠️ **Note:** The web app requires a CORS browser extension to work (see [CORS workarounds](docs/README.md#cors-workarounds)). For a hassle-free experience, use the Python CLI tool below.
 
 [Learn more about the web app →](docs/README.md)
 
@@ -23,14 +25,17 @@ The web app provides the same functionality with an easy-to-use interface, filte
 - Creates an Excel report showing who has outstanding payments
 - Lets you filter by payment name (e.g. "Match Fee", "2025", "Membership")
 - **Web version**: View and analyze data in your browser with filtering, sorting, and export options
+- **CLI version**: Reliable, no CORS restrictions, automated login support
 
 ## Getting Started
 
-### Option 1: Use the Web App (No Installation Required)
+### Option 1: Use the Web App (Browser-Based)
 
 Visit **[https://jtracey93.github.io/spond-payment-reporting/](https://jtracey93.github.io/spond-payment-reporting/)** and follow the on-screen instructions.
 
-### Option 2: Install the Command-Line Tool
+**Important:** You'll need to install a CORS browser extension. See [CORS workarounds](docs/README.md#cors-workarounds) for details.
+
+### Option 2: Install the Command-Line Tool (Recommended)
 
 #### 1. Install Python
 

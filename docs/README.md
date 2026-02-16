@@ -2,6 +2,23 @@
 
 This is a static web application that provides the same payment reporting functionality as the Python CLI tool, but accessible through any modern web browser.
 
+## ⚠️ Important: CORS Limitation
+
+**The web app may not work in all browsers due to CORS (Cross-Origin Resource Sharing) restrictions.** Spond's API doesn't allow direct browser-based requests from GitHub Pages.
+
+### If the app hangs or fails to load data:
+
+1. **Install a CORS browser extension** (recommended for web app):
+   - Chrome/Edge: Search for "Allow CORS" or "CORS Unblock" in the extension store
+   - Firefox: Search for "CORS Everywhere"
+   - Enable the extension only when using this app, then disable it for security
+   
+2. **Use the Python CLI tool instead** (works reliably without CORS issues):
+   - See [installation instructions](../README.md#option-2-install-the-command-line-tool)
+   - No CORS restrictions, works everywhere
+
+See [CORS Workarounds](#cors-workarounds) section below for more details.
+
 ## 🌐 Live Demo
 
 **Access the app here:** [https://jtracey93.github.io/spond-payment-reporting/](https://jtracey93.github.io/spond-payment-reporting/)
@@ -76,21 +93,63 @@ This app works on all modern browsers:
 - ✅ Safari
 - ✅ Opera
 
+**Note:** CORS restrictions may prevent the app from working without a browser extension. See [CORS Workarounds](#cors-workarounds) below.
+
+## CORS Workarounds
+
+**Why this is needed:** Browsers block requests to different domains (Spond's API) for security. This is called CORS (Cross-Origin Resource Sharing).
+
+### Option 1: Browser Extension (Easiest for Web App)
+
+Install a CORS extension to allow the web app to access Spond's API:
+
+**For Chrome/Edge:**
+1. Go to your browser's extension store
+2. Search for "Allow CORS: Access-Control-Allow-Origin" or "CORS Unblock"
+3. Install the extension
+4. Click the extension icon to enable it
+5. Reload this web app and try again
+6. **Important:** Disable the extension when you're done for security
+
+**For Firefox:**
+1. Go to Firefox Add-ons
+2. Search for "CORS Everywhere" or "Allow CORS"
+3. Install the add-on
+4. Enable it from the toolbar
+5. Reload this web app
+6. **Important:** Disable when not in use
+
+**Security Note:** CORS extensions bypass browser security. Only enable them when using this app, and only install extensions from trusted sources.
+
+### Option 2: Python CLI Tool (Recommended)
+
+The Python command-line tool has **no CORS restrictions** and works reliably:
+- See [installation instructions](../README.md#option-2-install-the-command-line-tool)
+- Same features as the web app
+- No browser extensions needed
+- Works on all operating systems
+
+### Option 3: Local Proxy Server (Advanced)
+
+Run a local proxy server that forwards requests to Spond's API. This requires technical setup and is beyond the scope of this guide.
+
 ## Limitations
 
 - Bearer tokens expire periodically - you'll need to get a new one when yours expires
-- CORS restrictions may apply (if you encounter issues, try using a different browser)
+- CORS restrictions require browser extensions or using the Python CLI tool
 - PDF export uses the browser's print functionality
 
 ## Troubleshooting
 
-### "Failed to load data" error
+### App hangs or "Failed to load data" error
+- **Most common cause:** CORS restriction. Install a CORS browser extension (see above)
 - Check that your bearer token is correct and hasn't expired
 - Verify your club ID is correct
-- Try getting a fresh token from Spond
+- Try the Python CLI tool instead (no CORS issues)
 
 ### CORS errors in console
-- Some browsers may block cross-origin requests
+- This is the expected behavior when Spond's API blocks browser requests
+- Solution: Install a CORS browser extension or use the Python CLI tool
 - Try using Chrome/Edge with CORS extensions, or use the Python CLI tool instead
 
 ### Data not loading
