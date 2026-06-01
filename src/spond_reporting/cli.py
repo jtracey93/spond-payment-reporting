@@ -93,7 +93,7 @@ For more information, visit: https://github.com/jtracey93/spond-payment-reportin
     parser.add_argument(
         '--version',
         action='version',
-        version='%(prog)s 1.0.0'
+        version='%(prog)s 1.1.0'
     )
     
     args = parser.parse_args()
@@ -136,7 +136,7 @@ For more information, visit: https://github.com/jtracey93/spond-payment-reportin
                         save_token=True,
                     )
             else:
-                print("Spond Payment Reporting Tool v1.0.0")
+                print("Spond Payment Reporting Tool v1.1.0")
                 print("=====================================")
                 print()
                 print("No saved token found. Opening browser to log in...")
