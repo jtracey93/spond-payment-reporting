@@ -77,6 +77,9 @@ spond-report --title-filter "2025"
 # Multiple filters (must match ALL)
 spond-report --title-filter "Match Fee" --title-filter "2025"
 
+# Exclude payments matching a term (applied after --title-filter, can be used multiple times)
+spond-report --title-filter "Match Fee" --exclude-title-filter "30th May"
+
 # Save the filtered report
 spond-report --title-filter "Match Fee" --title-filter "2025" -o "2025_match_fees.xlsx"
 ```

@@ -97,6 +97,7 @@ Your choice is saved so you won't be asked again.
 | Show only 2025 payments | `spond-report --title-filter "2025"` |
 | Show only match fees | `spond-report --title-filter "Match Fee"` |
 | Show only 2025 match fees | `spond-report --title-filter "Match Fee" --title-filter "2025"` |
+| Exclude a specific game | `spond-report --title-filter "Match Fee" --exclude-title-filter "30th May"` |
 | Force a fresh browser login | `spond-report --login` |
 | Login in InPrivate mode | `spond-report --login --private` |
 | Pass a token directly | `spond-report --bearer-token YOUR_TOKEN` |
@@ -121,6 +122,11 @@ spond-report --title-filter "Match Fee" --title-filter "2025"
 **Save the filtered report:**
 ```bash
 spond-report --title-filter "Match Fee" --title-filter "2025" -o "2025_match_fees.xlsx"
+```
+
+**Exclude payments (reverse of `--title-filter`)** — use `--exclude-title-filter` to remove payments whose title contains the given text. It is applied *after* the `--title-filter` inclusion filters. A payment is excluded if it matches ANY of the exclude filters, and it can be used multiple times:
+```bash
+spond-report --title-filter "Match Fee" --title-filter "2026" --exclude-title-filter "30th May"
 ```
 
 ### Example Results
