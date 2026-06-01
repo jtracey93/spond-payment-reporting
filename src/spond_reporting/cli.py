@@ -24,6 +24,7 @@ Examples:
   spond-report -o my_report.xlsx        # Specify output file
   spond-report --title-filter "2025"    # Filter for payments containing "2025"
   spond-report --title-filter "Match Fee" --title-filter "2025"  # AND filtering
+  spond-report --title-filter "Match Fee" --exclude-title-filter "30th May"  # Include Match Fee, exclude 30th May
   spond-report --bearer-token TOKEN --club-id ID  # Provide token directly
   spond-report --bearer-token TOKEN               # Provide token, select club
   spond-report --login                  # Force browser login (ignore saved token)
@@ -71,6 +72,13 @@ For more information, visit: https://github.com/jtracey93/spond-payment-reportin
     )
     
     parser.add_argument(
+        '--exclude-title-filter',
+        type=str,
+        action='append',
+        help='Exclude payments by title containing this string (case-insensitive). Applied after --title-filter. Can be used multiple times to exclude any matching payment.'
+    )
+    
+    parser.add_argument(
         '--reset-config',
         action='store_true',
         help='Reset saved configuration'
@@ -85,7 +93,7 @@ For more information, visit: https://github.com/jtracey93/spond-payment-reportin
     parser.add_argument(
         '--version',
         action='version',
-        version='%(prog)s 1.0.0'
+        version='%(prog)s 1.1.0'
     )
     
     args = parser.parse_args()
@@ -128,7 +136,7 @@ For more information, visit: https://github.com/jtracey93/spond-payment-reportin
                         save_token=True,
                     )
             else:
-                print("Spond Payment Reporting Tool v1.0.0")
+                print("Spond Payment Reporting Tool v1.1.0")
                 print("=====================================")
                 print()
                 print("No saved token found. Opening browser to log in...")
@@ -164,7 +172,8 @@ For more information, visit: https://github.com/jtracey93/spond-payment-reportin
         
         print("Processing payment data...")
         granular_rows, summary_stats = report_generator.process_payment_data(
-            payments, member_map, api, title_filters=args.title_filter
+            payments, member_map, api, title_filters=args.title_filter,
+            exclude_title_filters=args.exclude_title_filter
         )
         
         # Generate Excel file

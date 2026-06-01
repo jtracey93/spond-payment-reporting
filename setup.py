@@ -16,7 +16,7 @@ def read_readme():
 
 setup(
     name="spond-payment-reporting",
-    version="1.0.0",
+    version="1.1.0",
     author="jtracey93",
     author_email="",
     description="A tool to generate payment reports from Spond club management system",

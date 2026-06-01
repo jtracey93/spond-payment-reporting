@@ -289,6 +289,69 @@ class TestPaymentReportGenerator:
         
         result = generator.generate_excel_report([])
         assert result is None
+    
+    def test_title_filter_includes_matching(self):
+        """Test that title_filters only includes payments matching ALL terms"""
+        generator = PaymentReportGenerator()
+        mock_api = Mock()
+        mock_api.get_payment_details.return_value = {'recipients': []}
+        
+        payments = [
+            {'id': '1', 'title': 'Match Fee 2026'},
+            {'id': '2', 'title': 'Match Fee 2025'},
+            {'id': '3', 'title': 'Subscription 2026'},
+        ]
+        
+        _, stats = generator.process_payment_data(
+            payments, {}, mock_api, title_filters=['Match Fee', '2026']
+        )
+        
+        # Only payment 1 matches both terms
+        assert stats['total_payments_processed'] == 1
+        assert stats['filtered_payments'] == 2
+    
+    def test_exclude_title_filter_excludes_matching(self):
+        """Test that exclude_title_filters removes payments matching ANY term"""
+        generator = PaymentReportGenerator()
+        mock_api = Mock()
+        mock_api.get_payment_details.return_value = {'recipients': []}
+        
+        payments = [
+            {'id': '1', 'title': 'Match Fee 30th May'},
+            {'id': '2', 'title': 'Match Fee 6th June'},
+            {'id': '3', 'title': 'Match Fee 13th June'},
+        ]
+        
+        _, stats = generator.process_payment_data(
+            payments, {}, mock_api, exclude_title_filters=['30th May']
+        )
+        
+        # Payment 1 is excluded
+        assert stats['total_payments_processed'] == 2
+        assert stats['excluded_payments'] == 1
+    
+    def test_exclude_after_title_filter(self):
+        """Test that exclude_title_filters is applied after title_filters"""
+        generator = PaymentReportGenerator()
+        mock_api = Mock()
+        mock_api.get_payment_details.return_value = {'recipients': []}
+        
+        payments = [
+            {'id': '1', 'title': 'Match Fee 2026 30th May'},
+            {'id': '2', 'title': 'Match Fee 2026 6th June'},
+            {'id': '3', 'title': 'Subscription 2026'},
+        ]
+        
+        _, stats = generator.process_payment_data(
+            payments, {}, mock_api,
+            title_filters=['Match Fee', '2026'],
+            exclude_title_filters=['30th May']
+        )
+        
+        # Payment 3 filtered out (no Match Fee), payment 1 excluded (30th May)
+        assert stats['filtered_payments'] == 1
+        assert stats['excluded_payments'] == 1
+        assert stats['total_payments_processed'] == 1
 
 
 class TestFetchClubs:

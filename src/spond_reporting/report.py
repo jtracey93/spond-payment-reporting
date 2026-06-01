@@ -14,7 +14,8 @@ class PaymentReportGenerator:
         pass
     
     def process_payment_data(self, payments: List[Dict], member_map: Dict[str, str], 
-                           api_client, title_filters: Optional[List[str]] = None) -> tuple:
+                           api_client, title_filters: Optional[List[str]] = None,
+                           exclude_title_filters: Optional[List[str]] = None) -> tuple:
         """
         Process payment data to extract unpaid amounts
         
@@ -23,6 +24,7 @@ class PaymentReportGenerator:
             member_map (Dict[str, str]): Mapping of member IDs to names
             api_client: Spond API client instance
             title_filters (Optional[List[str]]): Filter payments by title containing ALL these strings
+            exclude_title_filters (Optional[List[str]]): Exclude payments by title containing ANY of these strings
             
         Returns:
             tuple: (granular_rows, summary_stats)
@@ -31,10 +33,13 @@ class PaymentReportGenerator:
         total_payments_processed = 0
         payments_with_unpaid = 0
         filtered_payments = 0
+        excluded_payments = 0
         
         print(f"Processing {len(payments)} payments...")
         if title_filters:
             print(f"Filtering for payments containing ALL of: {title_filters}")
+        if exclude_title_filters:
+            print(f"Excluding payments containing ANY of: {exclude_title_filters}")
         
         for payment in payments:
             payment_id = payment.get('id')
@@ -45,6 +50,13 @@ class PaymentReportGenerator:
                 payment_name_lower = payment_name.lower()
                 if not all(filter_term.lower() in payment_name_lower for filter_term in title_filters):
                     filtered_payments += 1
+                    continue
+            
+            # Apply exclude title filters if specified - exclude if ANY filter matches
+            if exclude_title_filters:
+                payment_name_lower = payment_name.lower()
+                if any(filter_term.lower() in payment_name_lower for filter_term in exclude_title_filters):
+                    excluded_payments += 1
                     continue
             
             try:
@@ -95,10 +107,12 @@ class PaymentReportGenerator:
         summary_stats = {
             'total_payments_found': len(payments),
             'filtered_payments': filtered_payments,
+            'excluded_payments': excluded_payments,
             'total_payments_processed': total_payments_processed,
             'payments_with_unpaid': payments_with_unpaid,
             'total_unpaid_items': len(granular_rows),
-            'title_filters': title_filters
+            'title_filters': title_filters,
+            'exclude_title_filters': exclude_title_filters
         }
         
         return granular_rows, summary_stats
@@ -149,6 +163,8 @@ class PaymentReportGenerator:
         print(f"Found {summary_stats['total_payments_found']} total payments")
         if summary_stats.get('title_filters'):
             print(f"Filtered out {summary_stats['filtered_payments']} payments not containing ALL of: {summary_stats['title_filters']}")
+        if summary_stats.get('exclude_title_filters'):
+            print(f"Excluded {summary_stats['excluded_payments']} payments containing ANY of: {summary_stats['exclude_title_filters']}")
         print(f"Processed {summary_stats['total_payments_processed']} payments")
         print(f"{summary_stats['payments_with_unpaid']} payments have unpaid recipients")
         print(f"Total unpaid items found: {summary_stats['total_unpaid_items']}")
